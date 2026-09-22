@@ -17,9 +17,11 @@
       <h1>Welcome back</h1>
       <p class="muted">Sign in to update products, deals, reviews and announcements.</p>
       <label class="field">Email<input name="email" type="email" autocomplete="username" value="hairsbygifty@gmail.com" readonly required></label>
-      <label class="field">Password<input name="password" type="password" autocomplete="current-password" required></label>
-      <button class="btn primary" type="submit">Sign in</button>
+      <label class="field">Password<div class="password-wrap"><input id="passwordInput" name="password" type="password" autocomplete="current-password" required><button id="togglePassword" class="password-toggle" type="button">Show</button></div></label>
+      <button id="signInBtn" class="btn primary" type="submit">Sign in</button>
+      <button id="resetPasswordBtn" class="text-btn" type="button">Forgot password?</button>
       <p id="loginError" class="form-error" hidden></p>
+      <p id="loginStatus" class="form-success" hidden></p>
       <a class="preview-link" href="../">← Back to website</a>
     </form>
   </section>
