@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../firebase-client.js";
 import {
-  signInWithEmailAndPassword, onAuthStateChanged, signOut
+  signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {
   collection, getDocs, addDoc, setDoc, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch
@@ -119,10 +119,53 @@ function wireActions(){
 
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 document.querySelector("#logoutBtn").onclick=()=>signOut(auth);
-document.querySelector("#loginForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(e.currentTarget),err=document.querySelector("#loginError");err.hidden=true;try{await signInWithEmailAndPassword(auth,"hairsbygifty@gmail.com",f.get("password"))}catch(ex){err.textContent="That email or password was not accepted.";err.hidden=false}};
+document.querySelector("#togglePassword").onclick=()=>{
+  const input=document.querySelector("#passwordInput");
+  const show=input.type==="password";
+  input.type=show?"text":"password";
+  document.querySelector("#togglePassword").textContent=show?"Hide":"Show";
+};
+
+document.querySelector("#resetPasswordBtn").onclick=async()=>{
+  const err=document.querySelector("#loginError"),status=document.querySelector("#loginStatus");
+  err.hidden=true; status.hidden=true;
+  try{
+    await sendPasswordResetEmail(auth,"hairsbygifty@gmail.com");
+    status.textContent="Password reset email sent to hairsbygifty@gmail.com.";
+    status.hidden=false;
+  }catch(ex){
+    err.textContent="Could not send the reset email. Please try again.";
+    err.hidden=false;
+  }
+};
+
+document.querySelector("#loginForm").onsubmit=async e=>{
+  e.preventDefault();
+  const f=new FormData(e.currentTarget);
+  const err=document.querySelector("#loginError"),status=document.querySelector("#loginStatus"),btn=document.querySelector("#signInBtn");
+  err.hidden=true; status.hidden=true; btn.disabled=true; btn.textContent="Signing in…";
+  try{
+    await signInWithEmailAndPassword(auth,"hairsbygifty@gmail.com",f.get("password"));
+  }catch(ex){
+    err.textContent=ex.code==="auth/invalid-credential"?"The password is incorrect.":"Sign in failed. Please try again.";
+    err.hidden=false;
+    btn.disabled=false; btn.textContent="Sign in";
+  }
+};
 
 onAuthStateChanged(auth,async user=>{
-  document.querySelector("#loginView").hidden=!!user;
-  document.querySelector("#adminView").hidden=!user;
-  if(user){document.querySelector("#ownerEmail").textContent=user.email||"Signed in";await load()}
+  const login=document.querySelector("#loginView");
+  const admin=document.querySelector("#adminView");
+  login.hidden=!!user;
+  admin.hidden=!user;
+  if(user){
+    document.querySelector("#ownerEmail").textContent=user.email||"Signed in";
+    try{await load()}
+    catch(ex){
+      screen().innerHTML='<div class="panel"><b>Firebase setup is not complete yet.</b><p class="muted">Enable Firestore Database, then refresh this page.</p></div>';
+    }
+  }else{
+    const btn=document.querySelector("#signInBtn");
+    if(btn){btn.disabled=false;btn.textContent="Sign in";}
+  }
 });
