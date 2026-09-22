@@ -1,1 +1,45 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HairsByGiftee — Owner</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet"><link rel="stylesheet" href="../styles.css"></head><body class="admin-body"><div class="admin-wrap"><aside class="side"><div class="logo"><span>HairsByGiftee</span><small>OWNER</small></div><button data-tab="home" class="active">Home</button><button data-tab="products">Products</button><button data-tab="deals">Hot Deals</button><button data-tab="announcements">Announcements</button><button data-tab="reviews">Reviews</button><a href="../" target="_blank">View Website ↗</a></aside><main class="admin-main"><div class="admin-top"><span class="preview-link">Preview admin — Firebase login comes next</span><span>Hi, Giftee ♥</span></div><div id="screen"></div></main></div><script src="./admin.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#4b2f39">
+  <title>HairsByGiftee — Owner Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="admin-body">
+  <section id="loginView" class="login-view">
+    <form id="loginForm" class="login-card">
+      <div class="logo"><span>HairsByGiftee</span><small>OWNER PORTAL</small></div>
+      <h1>Welcome back</h1>
+      <p class="muted">Sign in to update products, deals, reviews and announcements.</p>
+      <label class="field">Email<input name="email" type="email" autocomplete="username" required></label>
+      <label class="field">Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary" type="submit">Sign in</button>
+      <p id="loginError" class="form-error" hidden></p>
+      <a class="preview-link" href="../">← Back to website</a>
+    </form>
+  </section>
+
+  <div id="adminView" class="admin-wrap" hidden>
+    <aside class="side">
+      <div class="logo"><span>HairsByGiftee</span><small>OWNER</small></div>
+      <button data-tab="home" class="active">Home</button>
+      <button data-tab="products">Products</button>
+      <button data-tab="deals">Hot Deals</button>
+      <button data-tab="announcements">Announcements</button>
+      <button data-tab="reviews">Reviews</button>
+      <a href="../" target="_blank">View Website ↗</a>
+      <button id="logoutBtn">Log out</button>
+    </aside>
+    <main class="admin-main">
+      <div class="admin-top"><span class="preview-link">Live website controls</span><span id="ownerEmail"></span></div>
+      <div id="screen"></div>
+    </main>
+  </div>
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>
