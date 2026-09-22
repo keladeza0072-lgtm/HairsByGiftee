@@ -1,16 +1,21 @@
 const WA="2347087861972";
 const defaults={products:[
-{id:"p1",name:"Luxe Bone Straight",price:165000,salePrice:130000,detail:'22” • 200% • HD Lace',category:"Bone Straight",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=900&q=85"},
+{id:"p1",name:"Luxe Bone Straight",price:165000,salePrice:130000,detail:'22” • 200% • HD Lace',category:"Bone Straight",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=85"},
 {id:"p2",name:"Dreamy Curls",price:182000,salePrice:149000,detail:'20” • 180% • HD Lace',category:"Curly",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=900&q=85"},
-{id:"p3",name:"Classic Bob",price:145000,salePrice:119000,detail:'14” • 180% • HD Lace',category:"Bob Wigs",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=85"},
-{id:"p4",name:"Piano Highlight",price:205000,detail:'22” • 200% • HD Lace',category:"Coloured Wigs",hotDeal:false,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=85"}],
+{id:"p3",name:"Classic Bob",price:145000,salePrice:119000,detail:'14” • 180% • HD Lace',category:"Bob Wigs",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=85"},
+{id:"p4",name:"Piano Highlight",price:205000,detail:'22” • 200% • HD Lace',category:"Coloured Wigs",hotDeal:false,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=900&q=85"}],
 reviews:[
 {id:"r1",name:"Amara T.",rating:5,quote:"The hair is so soft and true to length. I keep getting compliments.",published:true,image:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=500&q=80"},
 {id:"r2",name:"Chinaza O.",rating:5,quote:"This is my third order and the quality is always top tier.",published:true,image:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80"},
 {id:"r3",name:"Ifunanya E.",rating:5,quote:"It looks so natural and the install was simple. I love it.",published:true,image:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=500&q=80"}],
 announcements:[{id:"a1",message:"Global delivery available • 3–6 day nationwide shipping",active:true}]};
 const rates={NGN:{s:"₦",r:1,d:0},USD:{s:"$",r:.00063,d:2},GBP:{s:"£",r:.00047,d:2},GHS:{s:"GH₵",r:.0062,d:2},XAF:{s:"FCFA ",r:.36,d:0}};
-const get=(k)=>{try{return JSON.parse(localStorage.getItem("hbg_"+k))||defaults[k]}catch{return defaults[k]}};
+const IMAGE_FIXES={
+"1500648767791-00dcc994a43e":"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=85",
+"1492562080023-ab3db95bfbce":"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=85"
+};
+const safeImage=(url="")=>{const hit=Object.keys(IMAGE_FIXES).find(id=>url.includes(id));return hit?IMAGE_FIXES[hit]:url};
+const get=(k)=>{try{const data=JSON.parse(localStorage.getItem("hbg_"+k))||defaults[k];if(k==="products")return data.map(p=>({...p,image:safeImage(p.image)}));return data}catch{return defaults[k]}};
 let currency=localStorage.getItem("hbg_currency")||"NGN";
 const money=(v)=>{const x=rates[currency]||rates.NGN;return x.s+(Number(v)*x.r).toLocaleString(undefined,{minimumFractionDigits:x.d,maximumFractionDigits:x.d})};
 const wa=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent("Hi HairsByGiftee ❤️\nI’m interested in the "+p.name+".\n"+(p.detail||"")+"\nPrice: ₦"+Number(price).toLocaleString("en-NG")+"\n\nIs it currently available?");
