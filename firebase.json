@@ -30,6 +30,12 @@
           }
         ]
       }
+    ],
+    "rewrites": [
+      {
+        "source": "/owner/dashboard",
+        "destination": "/owner/dashboard.html"
+      }
     ]
   },
   "firestore": {
