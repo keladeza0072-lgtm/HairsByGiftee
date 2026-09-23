@@ -140,3 +140,50 @@
   .storefront .section-head{align-items:flex-end}
   .storefront .review-controls{display:none}
 }
+
+/* Minimal usability pass */
+.storefront .search-toggle{
+  min-width:108px;
+  height:42px;
+  padding:0 14px;
+  gap:8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-color:#cdbdb5;
+  background:#fffaf7;
+  color:#241c19;
+  font-size:12px;
+}
+.storefront .search-toggle svg{
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+}
+.storefront .search-toggle:hover{border-color:#a88f84;background:#fff}
+.storefront .section-head{margin-bottom:16px}
+.storefront .section h2{font-size:34px}
+.experience-section{margin-top:28px;min-height:320px}
+.experience-copy{padding:38px 42px}
+.experience-copy h2{font-size:43px;margin-bottom:10px}
+.experience-copy>p:not(.eyebrow){font-size:14px;line-height:1.65;margin:0}
+.editorial-link{margin-top:12px}
+.hero-subtitle{font-size:14px;margin-top:10px;margin-bottom:16px}
+.storefront .compact-section{padding-block:38px}
+.storefront .compact-closing{padding:30px 0}
+.storefront .compact-footer{padding:20px 0}
+@media(max-width:700px){
+  .storefront .search-toggle{
+    min-width:44px;
+    width:44px;
+    padding:0;
+  }
+  .storefront .search-toggle svg{width:21px;height:21px}
+  .experience-section{margin-top:20px}
+  .experience-copy{padding:26px 22px}
+  .experience-copy h2{font-size:34px}
+  .storefront .compact-section{padding-block:30px}
+}
