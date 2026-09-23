@@ -42,25 +42,20 @@ function docFromFirestore(d){
   Object.entries(d.fields||{}).forEach(([k,v])=>out[k]=valueFrom(v));
   return out;
 }
-async function request(url,opts={}){
+async function request(url,opts={},needsAuth=true){
   const headers=new Headers(opts.headers||{});
-  headers.set("Authorization","Bearer "+token());
+  if(needsAuth) headers.set("Authorization","Bearer "+token());
   const res=await fetch(url,{...opts,headers});
   let data={};
   if(res.status!==204){try{data=await res.json()}catch{}}
-  if(res.status===401||res.status===403){
-    const msg=data?.error?.message||"Your session expired.";
-    if(/auth|credential|permission|unauth/i.test(msg)){
-      sessionStorage.clear();
-      window.location.replace("./");
-      throw new Error("Session expired");
-    }
+  if(!res.ok){
+    const msg=data?.error?.message||("HTTP "+res.status);
+    const err=new Error(msg); err.status=res.status; throw err;
   }
-  if(!res.ok)throw new Error(data?.error?.message||("HTTP "+res.status));
   return data;
 }
 async function listCollection(name){
-  const data=await request(FIRESTORE_BASE+"/"+name+"?pageSize=100");
+  const data=await request(FIRESTORE_BASE+"/"+name+"?pageSize=100",{},false);
   return (data.documents||[]).map(docFromFirestore).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
 }
 async function createDoc(name,data){
@@ -203,7 +198,9 @@ function wireActions(){
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 document.querySelector("#logoutBtn").onclick=()=>{sessionStorage.clear();window.location.replace("./")};
 
+screen().innerHTML='<div class="panel"><b>Loading your live website data…</b><p class="muted">This should only take a moment.</p></div>';
 load().catch(err=>{
-  screen().innerHTML='<div class="panel"><b>Dashboard could not load.</b><p class="muted">'+esc(err.message)+'</p><button id="retryBtn" class="btn primary">Try again</button></div>';
+  screen().innerHTML='<div class="panel dashboard-error"><b>Dashboard could not load.</b><p class="muted">'+esc(err.message)+'</p><div class="admin-submit"><button id="retryBtn" class="btn primary">Try again</button><button id="backLoginBtn" class="mini">Sign in again</button></div></div>';
   const retry=document.querySelector("#retryBtn");if(retry)retry.onclick=()=>location.reload();
+  const back=document.querySelector("#backLoginBtn");if(back)back.onclick=()=>{sessionStorage.clear();window.location.replace("./")};
 });
