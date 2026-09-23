@@ -3,37 +3,36 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#f7f0eb" />
+  <meta name="theme-color" content="#fbf7f3" />
   <meta name="description" content="HairsByGiftee — premium human hair wigs with easy WhatsApp ordering." />
   <title>HairsByGiftee — Luxury Hair</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=owner-safe-20260923" />
-  <link rel="stylesheet" href="./storefront.css?v=store-20260923-4" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260923-5" />
 </head>
 <body class="storefront">
-  <header class="site-header shell">
-    <a class="brand-wordmark" href="#top" aria-label="HairsByGiftee home">
-      <span>HairsByGiftee</span>
-      <small>LUXURY HAIR FOR YOU</small>
-    </a>
-
-    <nav class="main-nav" aria-label="Main navigation">
-      <a href="#top">Home</a>
-      <a href="#shop">Shop</a>
-      <a href="#contact">Contact</a>
-    </nav>
-
-    <div class="header-actions">
-      <button id="searchToggle" class="search-toggle" type="button" aria-label="Search wigs">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
-        <span>Search wigs...</span>
-      </button>
-      <a class="whatsapp-header" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
-        <span class="wa-mark" aria-hidden="true">◉</span>
-        <span>Chat on WhatsApp</span>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand-wordmark" href="#top">
+        <span>HairsByGiftee</span>
+        <small>LUXURY HAIR FOR YOU</small>
       </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#top">Home</a>
+        <a href="#shop">Shop</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <button id="searchToggle" class="search-toggle" type="button" aria-label="Search wigs">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+          <span>Search wigs...</span>
+        </button>
+        <a class="whatsapp-header" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
+          <span class="wa-icon">◉</span><span>Chat on WhatsApp</span>
+        </a>
+      </div>
     </div>
   </header>
 
@@ -46,10 +45,8 @@
 
   <main id="top">
     <section class="hero-banner">
-      <div class="hero-photo hero-photo-a"></div>
-      <div class="hero-photo hero-photo-b"></div>
-      <div class="hero-photo hero-photo-c"></div>
-      <div class="hero-message">
+      <div class="hero-image" aria-hidden="true"></div>
+      <div class="hero-panel">
         <p>CONFIDENCE LOOKS GOOD ON YOU</p>
         <h1>LUXURY<br>HAIR</h1>
         <a href="#shop">SHOP NOW</a>
@@ -57,42 +54,27 @@
     </section>
 
     <section class="benefit-strip" aria-label="Why shop HairsByGiftee">
-      <div class="benefit-item">
-        <span class="benefit-icon">▣</span>
-        <div><b>Fast Delivery</b><small>Across Nigeria</small></div>
-      </div>
-      <div class="benefit-item">
-        <span class="benefit-icon">◇</span>
-        <div><b>Premium Quality</b><small>100% Human Hair</small></div>
-      </div>
-      <div class="benefit-item">
-        <span class="benefit-icon">✓</span>
-        <div><b>Safe & Secure</b><small>Shop with confidence</small></div>
-      </div>
-      <div class="benefit-item">
-        <span class="benefit-icon">♡</span>
-        <div><b>Loved by Many</b><small>Real Customers</small></div>
-      </div>
+      <div class="benefit-item"><span class="benefit-icon">▣</span><div><b>Fast Delivery</b><small>Across Nigeria</small></div></div>
+      <div class="benefit-item"><span class="benefit-icon">◇</span><div><b>Premium Quality</b><small>100% Human Hair</small></div></div>
+      <div class="benefit-item"><span class="benefit-icon">✓</span><div><b>Safe & Secure</b><small>Shop with confidence</small></div></div>
+      <div class="benefit-item"><span class="benefit-icon">♡</span><div><b>Loved by Many</b><small>Real Customers</small></div></div>
     </section>
 
     <section id="shop" class="shop-section shell">
-      <div class="shop-title-row">
-        <h2>Shop Wigs</h2>
-        <span id="shopCount"></span>
-      </div>
+      <h2>Shop Wigs</h2>
       <div id="categoryFilters" class="filters" aria-label="Product categories"></div>
-      <div id="shopGrid" class="product-grid four"></div>
+      <div id="shopGrid" class="product-grid"></div>
     </section>
 
     <section id="reviews" class="reviews-section">
-      <div class="shell review-wrap">
+      <div class="shell">
         <h2>Happy Customers</h2>
         <div class="review-stage">
           <button id="reviewPrev" class="review-arrow" type="button" aria-label="Previous review">‹</button>
           <div id="reviewSlider" class="review-slider" tabindex="0"></div>
           <button id="reviewNext" class="review-arrow" type="button" aria-label="Next review">›</button>
         </div>
-        <div id="reviewDots" class="review-dots" aria-label="Review navigation"></div>
+        <div id="reviewDots" class="review-dots"></div>
       </div>
     </section>
 
@@ -100,9 +82,8 @@
       <div class="final-cta-photo"></div>
       <div class="final-cta-copy">
         <h2>Ready for your new look?</h2>
-        <a class="final-wa" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
-          <span class="wa-mark" aria-hidden="true">◉</span>
-          <span>Chat on WhatsApp</span>
+        <a href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
+          <span class="wa-icon">◉</span><span>Chat on WhatsApp</span>
         </a>
       </div>
     </section>
@@ -122,16 +103,16 @@
         <div id="modalThumbs" class="modal-thumbs"></div>
       </div>
       <div class="modal-info">
-        <p id="modalCategory" class="eyebrow"></p>
+        <p id="modalCategory"></p>
         <h2 id="modalTitle"></h2>
-        <p id="modalDetail" class="modal-detail"></p>
-        <div id="modalPrice" class="modal-price"></div>
-        <p id="modalStock" class="modal-stock"></p>
-        <a id="modalBuy" class="btn primary modal-buy" target="_blank" rel="noreferrer">Buy on WhatsApp</a>
+        <p id="modalDetail"></p>
+        <div id="modalPrice"></div>
+        <p id="modalStock"></p>
+        <a id="modalBuy" class="modal-buy" target="_blank" rel="noreferrer">Buy on WhatsApp</a>
       </div>
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260923-4"></script>
+  <script type="module" src="./app.js?v=store-20260923-5"></script>
 </body>
 </html>
