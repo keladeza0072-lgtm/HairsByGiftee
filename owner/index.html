@@ -122,7 +122,7 @@
       sessionStorage.setItem("hbg_refresh_token",data.refreshToken||"");
       sessionStorage.setItem("hbg_email",data.email||EMAIL);
       showSuccess("Signed in. Opening dashboard…");
-      window.location.href="./dashboard.html";
+      window.location.href="./dashboard";
     }catch(err){
       showError(err.message||"Sign in failed.");
       button.disabled=false;
@@ -131,7 +131,7 @@
   });
 
   if(sessionStorage.getItem("hbg_id_token")){
-    window.location.href="./dashboard.html";
+    window.location.href="./dashboard";
   }
 })();
 </script>
