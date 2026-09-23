@@ -3,114 +3,114 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#f4ece6" />
-  <meta name="description" content="HairsByGiftee — premium human hair wigs, hot deals and effortless WhatsApp ordering." />
-  <title>HairsByGiftee — Premium Human Hair Wigs</title>
+  <meta name="theme-color" content="#f7f0eb" />
+  <meta name="description" content="HairsByGiftee — premium human hair wigs with easy WhatsApp ordering." />
+  <title>HairsByGiftee — Luxury Hair</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=owner-safe-20260923" />
-  <link rel="stylesheet" href="./storefront.css?v=store-20260923-3" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260923-4" />
 </head>
 <body class="storefront">
-  <div class="topbar">
-    <span id="announcement">Global delivery available • 3–6 day nationwide shipping</span>
-    <div class="top-actions">
-      <a href="https://instagram.com/hairsbygiftee__" target="_blank" rel="noreferrer">Instagram</a>
-      <a href="https://tiktok.com/@hairsbygiftee" target="_blank" rel="noreferrer">TikTok</a>
-      <select id="currency" aria-label="Currency">
-        <option>NGN</option><option>USD</option><option>GBP</option><option>GHS</option><option>XAF</option>
-      </select>
-    </div>
-  </div>
+  <header class="site-header shell">
+    <a class="brand-wordmark" href="#top" aria-label="HairsByGiftee home">
+      <span>HairsByGiftee</span>
+      <small>LUXURY HAIR FOR YOU</small>
+    </a>
 
-  <header class="nav shell">
-    <a class="logo" href="#top"><span>HairsByGiftee</span><small>PREMIUM HUMAN HAIR WIGS</small></a>
-    <nav>
-      <a href="#deals">Hot Deals</a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#top">Home</a>
       <a href="#shop">Shop</a>
-      <a href="#reviews">Reviews</a>
+      <a href="#contact">Contact</a>
     </nav>
-    <div class="nav-actions">
-      <button id="searchToggle" class="search-toggle" type="button" aria-label="Search wigs"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l5 5"></path></svg><span>Search</span></button>
-      <a class="nav-cta" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">Chat on WhatsApp</a>
+
+    <div class="header-actions">
+      <button id="searchToggle" class="search-toggle" type="button" aria-label="Search wigs">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+        <span>Search wigs...</span>
+      </button>
+      <a class="whatsapp-header" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
+        <span class="wa-mark" aria-hidden="true">◉</span>
+        <span>Chat on WhatsApp</span>
+      </a>
     </div>
   </header>
 
   <div id="searchBar" class="search-bar" hidden>
     <div class="shell search-inner">
-      <input id="searchInput" type="search" placeholder="Search wigs, styles, lengths..." aria-label="Search wigs">
+      <input id="searchInput" type="search" placeholder="Search wigs..." aria-label="Search wigs">
       <button id="searchClose" type="button" aria-label="Close search">×</button>
     </div>
   </div>
 
   <main id="top">
-    <section class="editorial-hero">
-      <div class="hero-portraits" aria-hidden="true">
-        <div class="hero-portrait hero-left"></div>
-        <div class="hero-portrait hero-center"></div>
-        <div class="hero-portrait hero-right"></div>
-      </div>
-      <div class="hero-overlay">
-        
-        <h1>LUXURY HAIR</h1>
-        <p class="hero-subtitle">Premium human hair wigs.</p>
-        <a class="hero-shop-btn" href="#shop">SHOP WIGS</a>
+    <section class="hero-banner">
+      <div class="hero-photo hero-photo-a"></div>
+      <div class="hero-photo hero-photo-b"></div>
+      <div class="hero-photo hero-photo-c"></div>
+      <div class="hero-message">
+        <p>CONFIDENCE LOOKS GOOD ON YOU</p>
+        <h1>LUXURY<br>HAIR</h1>
+        <a href="#shop">SHOP NOW</a>
       </div>
     </section>
 
-    <section class="experience-section shell">
-      <div class="experience-copy">
-        
-        <h2>Find Your Wig</h2>
-        <p>Pick a style. View the details. Order on WhatsApp.</p>
-        <a class="editorial-link" href="#shop">SHOP WIGS</a>
+    <section class="benefit-strip" aria-label="Why shop HairsByGiftee">
+      <div class="benefit-item">
+        <span class="benefit-icon">▣</span>
+        <div><b>Fast Delivery</b><small>Across Nigeria</small></div>
       </div>
-      <div class="experience-image" aria-label="Premium wig editorial"></div>
+      <div class="benefit-item">
+        <span class="benefit-icon">◇</span>
+        <div><b>Premium Quality</b><small>100% Human Hair</small></div>
+      </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">✓</span>
+        <div><b>Safe & Secure</b><small>Shop with confidence</small></div>
+      </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">♡</span>
+        <div><b>Loved by Many</b><small>Real Customers</small></div>
+      </div>
     </section>
 
-    <section id="deals" class="section shell compact-section">
-      <div class="section-head">
-        <div><h2>Hot Deals</h2></div>
-        
-      </div>
-      <div id="dealGrid" class="product-grid three"></div>
-    </section>
-
-    <section id="shop" class="section shell compact-section shop-section">
-      <div class="section-head shop-head">
-        <div><h2>Shop Wigs</h2></div>
-        <span id="shopCount" class="section-note"></span>
+    <section id="shop" class="shop-section shell">
+      <div class="shop-title-row">
+        <h2>Shop Wigs</h2>
+        <span id="shopCount"></span>
       </div>
       <div id="categoryFilters" class="filters" aria-label="Product categories"></div>
-      <div id="shopGrid" class="product-grid four shop-grid"></div>
+      <div id="shopGrid" class="product-grid four"></div>
     </section>
 
-    <section id="reviews" class="section reviews compact-section">
-      <div class="shell review-shell">
-        <div class="section-head review-head">
-          <div><h2>Customer Reviews</h2></div>
-          <div class="review-controls">
-            <button id="reviewPrev" type="button" aria-label="Previous review">←</button>
-            <button id="reviewNext" type="button" aria-label="Next review">→</button>
-          </div>
+    <section id="reviews" class="reviews-section">
+      <div class="shell review-wrap">
+        <h2>Happy Customers</h2>
+        <div class="review-stage">
+          <button id="reviewPrev" class="review-arrow" type="button" aria-label="Previous review">‹</button>
+          <div id="reviewSlider" class="review-slider" tabindex="0"></div>
+          <button id="reviewNext" class="review-arrow" type="button" aria-label="Next review">›</button>
         </div>
-        <div id="reviewSlider" class="review-slider" tabindex="0"></div>
         <div id="reviewDots" class="review-dots" aria-label="Review navigation"></div>
       </div>
     </section>
 
-    <section class="closing compact-closing">
-      <div class="shell closing-inner">
-        <div><h2>Need help?</h2><p>Chat with us on WhatsApp.</p></div>
-        <a class="btn primary" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">Chat on WhatsApp</a>
+    <section id="contact" class="final-cta">
+      <div class="final-cta-photo"></div>
+      <div class="final-cta-copy">
+        <h2>Ready for your new look?</h2>
+        <a class="final-wa" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
+          <span class="wa-mark" aria-hidden="true">◉</span>
+          <span>Chat on WhatsApp</span>
+        </a>
       </div>
     </section>
   </main>
 
-  <footer class="shell footer compact-footer">
-    <div class="logo"><span>HairsByGiftee</span><small>BEAUTY. CONFIDENCE. YOU.</small></div>
-    <div><a href="#shop">Shop</a><a href="#deals">Hot Deals</a><a href="#reviews">Reviews</a></div>
+  <footer class="site-footer shell">
+    <span>HairsByGiftee</span>
+    <small>Instagram @hairsbygiftee__ • TikTok @hairsbygiftee</small>
   </footer>
 
   <div id="productModal" class="product-modal" hidden>
@@ -132,6 +132,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260923-3"></script>
+  <script type="module" src="./app.js?v=store-20260923-4"></script>
 </body>
 </html>
