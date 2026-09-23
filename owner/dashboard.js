@@ -11,10 +11,6 @@ const esc=(s="")=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"
 const naira=v=>"₦"+Number(v||0).toLocaleString("en-NG");
 const screen=()=>document.querySelector("#screen");
 
-if(!token()) window.location.replace("./");
-
-document.querySelector("#ownerEmail").textContent=sessionStorage.getItem("hbg_email")||"hairsbygifty@gmail.com";
-
 function fv(v){
   if(v===null||v===undefined)return {nullValue:null};
   if(typeof v==="boolean")return {booleanValue:v};
@@ -196,7 +192,10 @@ function wireActions(){
 }
 
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
-document.querySelector("#logoutBtn").onclick=()=>{sessionStorage.clear();window.location.replace("./")};
+document.querySelector("#logoutBtn").onclick=()=>{
+  sessionStorage.clear();
+  window.location.href="./";
+};
 
 screen().innerHTML='<div class="panel"><b>Loading your live website data…</b><p class="muted">This should only take a moment.</p></div>';
 load().catch(err=>{
