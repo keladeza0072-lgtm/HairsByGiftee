@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#F7EEE8" />
+  <meta name="theme-color" content="#f4ece6" />
   <meta name="description" content="HairsByGiftee — premium human hair wigs, hot deals and effortless WhatsApp ordering." />
   <title>HairsByGiftee — Premium Human Hair Wigs</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=store-20260923-2" />
+  <link rel="stylesheet" href="./styles.css?v=owner-safe-20260923" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260923-3" />
 </head>
-<body>
+<body class="storefront">
   <div class="topbar">
     <span id="announcement">Global delivery available • 3–6 day nationwide shipping</span>
     <div class="top-actions">
@@ -26,7 +27,9 @@
   <header class="nav shell">
     <a class="logo" href="#top"><span>HairsByGiftee</span><small>PREMIUM HUMAN HAIR WIGS</small></a>
     <nav>
-      <a href="#shop">Shop</a><a href="#deals">Hot Deals</a><a href="#reviews">Reviews</a>
+      <a href="#deals">Hot Deals</a>
+      <a href="#shop">Shop</a>
+      <a href="#reviews">Reviews</a>
     </nav>
     <div class="nav-actions">
       <button id="searchToggle" class="search-toggle" type="button" aria-label="Search wigs">⌕ <span>Search</span></button>
@@ -42,22 +45,35 @@
   </div>
 
   <main id="top">
-    <section class="hero">
-      <div class="hero-copy shell">
-        <p class="eyebrow">PREMIUM HUMAN HAIR WIGS</p>
-        <h1>Luxury Hair,<br><em>Effortlessly Yours.</em></h1>
-        <p class="lead">Premium human hair wigs for women who want polished, confident looks without the stress.</p>
-        <div class="hero-buttons">
-          <a class="btn primary" href="#shop">Shop Wigs</a>
-          <a class="btn ghost" href="#deals">View Hot Deals</a>
-        </div>
+    <section class="editorial-hero">
+      <div class="hero-portraits" aria-hidden="true">
+        <div class="hero-portrait hero-left"></div>
+        <div class="hero-portrait hero-center"></div>
+        <div class="hero-portrait hero-right"></div>
+      </div>
+      <div class="hero-overlay">
+        <p class="hero-kicker">HUMAN HAIR • LAGOS • WORLDWIDE DELIVERY</p>
+        <h1>LUXURY HAIR</h1>
+        <p class="hero-subtitle">Premium wigs made to look beautiful, feel effortless and wear confidently.</p>
+        <a class="hero-shop-btn" href="#shop">SHOP NOW</a>
       </div>
     </section>
 
-    <section class="trust shell">
-      <div><b>100% Human Hair</b><span>Soft, durable & long-lasting</span></div>
-      <div><b>Ready to Wear</b><span>Easy install, polished finish</span></div>
-      <div><b>Global Delivery</b><span>3–6 day nationwide shipping</span></div>
+    <section class="masterpiece-strip">
+      <div class="shell masterpiece-inner">
+        <p class="eyebrow">MASTERPIECE</p>
+        <p>Luxury hair should feel as beautiful as it looks. Explore premium textures, polished finishes and easy-to-wear styles selected for everyday confidence.</p>
+      </div>
+    </section>
+
+    <section class="experience-section shell">
+      <div class="experience-copy">
+        <p class="eyebrow">THE HAIR EXPERIENCE</p>
+        <h2>Experience Luxury</h2>
+        <p>We make choosing your next wig simple: premium hair, clear product details and direct ordering through WhatsApp. Browse, compare and buy without the usual stress.</p>
+        <a class="editorial-link" href="#shop">SHOP THE COLLECTION</a>
+      </div>
+      <div class="experience-image" aria-label="Premium wig editorial"></div>
     </section>
 
     <section id="deals" class="section shell compact-section">
@@ -93,7 +109,7 @@
 
     <section class="closing compact-closing">
       <div class="shell closing-inner">
-        <div><p class="eyebrow">NEED HELP CHOOSING?</p><h2>Seen something you love?</h2><p>Send us the wig and we’ll help you finish your order on WhatsApp.</p></div>
+        <div><p class="eyebrow">READY WHEN YOU ARE</p><h2>Found your next look?</h2><p>Send us the wig on WhatsApp and we’ll help you complete your order.</p></div>
         <a class="btn primary" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">Chat with HairsByGiftee</a>
       </div>
     </section>
@@ -123,6 +139,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260923-2"></script>
+  <script type="module" src="./app.js?v=store-20260923-3"></script>
 </body>
 </html>
