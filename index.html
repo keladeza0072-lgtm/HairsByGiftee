@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=store-20260923-2" />
 </head>
 <body>
   <div class="topbar">
@@ -28,73 +28,101 @@
     <nav>
       <a href="#shop">Shop</a><a href="#deals">Hot Deals</a><a href="#reviews">Reviews</a>
     </nav>
-    <a class="nav-cta" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">Chat on WhatsApp</a>
+    <div class="nav-actions">
+      <button id="searchToggle" class="search-toggle" type="button" aria-label="Search wigs">⌕ <span>Search</span></button>
+      <a class="nav-cta" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">Chat on WhatsApp</a>
+    </div>
   </header>
+
+  <div id="searchBar" class="search-bar" hidden>
+    <div class="shell search-inner">
+      <input id="searchInput" type="search" placeholder="Search wigs, styles, lengths..." aria-label="Search wigs">
+      <button id="searchClose" type="button" aria-label="Close search">×</button>
+    </div>
+  </div>
 
   <main id="top">
     <section class="hero">
       <div class="hero-copy shell">
         <p class="eyebrow">PREMIUM HUMAN HAIR WIGS</p>
         <h1>Luxury Hair,<br><em>Effortlessly Yours.</em></h1>
-        <p class="lead">Flawless styles. Real confidence. Premium human hair wigs for every version of you.</p>
+        <p class="lead">Premium human hair wigs for women who want polished, confident looks without the stress.</p>
         <div class="hero-buttons">
-          <a class="btn primary" href="#shop">Shop Collection</a>
-          <a class="btn ghost" href="#best">Explore Bestsellers</a>
+          <a class="btn primary" href="#shop">Shop Wigs</a>
+          <a class="btn ghost" href="#deals">View Hot Deals</a>
         </div>
       </div>
     </section>
 
     <section class="trust shell">
       <div><b>100% Human Hair</b><span>Soft, durable & long-lasting</span></div>
-      <div><b>Ready to Wear</b><span>Pre-styled, easy install</span></div>
-      <div><b>Global Delivery</b><span>Nationwide & international</span></div>
+      <div><b>Ready to Wear</b><span>Easy install, polished finish</span></div>
+      <div><b>Global Delivery</b><span>3–6 day nationwide shipping</span></div>
     </section>
 
-    <section id="deals" class="section shell">
+    <section id="deals" class="section shell compact-section">
       <div class="section-head">
-        <div><p class="eyebrow">HOT DEALS</p><h2>Unmissable Deals</h2></div>
+        <div><p class="eyebrow">HOT DEALS</p><h2>Worth grabbing now</h2></div>
         <span class="section-note">Limited pieces. While stock lasts.</span>
       </div>
       <div id="dealGrid" class="product-grid three"></div>
     </section>
 
-    <section id="reviews" class="section reviews">
-      <div class="shell">
-        <div class="section-head">
-          <div><p class="eyebrow">REAL PEOPLE. REAL RESULTS.</p><h2>Loved by Our Customers</h2></div>
+    <section id="shop" class="section shell compact-section shop-section">
+      <div class="section-head shop-head">
+        <div><p class="eyebrow">SHOP ALL</p><h2>Find your next wig</h2></div>
+        <span id="shopCount" class="section-note"></span>
+      </div>
+      <div id="categoryFilters" class="filters" aria-label="Product categories"></div>
+      <div id="shopGrid" class="product-grid four shop-grid"></div>
+    </section>
+
+    <section id="reviews" class="section reviews compact-section">
+      <div class="shell review-shell">
+        <div class="section-head review-head">
+          <div><p class="eyebrow">CUSTOMER LOVE</p><h2>What customers are saying</h2></div>
+          <div class="review-controls">
+            <button id="reviewPrev" type="button" aria-label="Previous review">←</button>
+            <button id="reviewNext" type="button" aria-label="Next review">→</button>
+          </div>
         </div>
-        <div id="reviewGrid" class="review-grid"></div>
+        <div id="reviewSlider" class="review-slider" tabindex="0"></div>
+        <div id="reviewDots" class="review-dots" aria-label="Review navigation"></div>
       </div>
     </section>
 
-    <section id="shop" class="section shell">
-      <div class="section-head"><div><p class="eyebrow">SHOP BY LOOK</p><h2>Find Your Perfect Style</h2></div></div>
-      <div class="look-grid">
-        <article class="look look-one"><span>Bone Straight</span></article>
-        <article class="look look-two"><span>Curly</span></article>
-        <article class="look look-three"><span>Bob Wigs</span></article>
-        <article class="look look-four"><span>Coloured Wigs</span></article>
-      </div>
-    </section>
-
-    <section id="best" class="section shell">
-      <div class="section-head"><div><p class="eyebrow">CLIENT FAVOURITES</p><h2>Our Bestsellers</h2></div></div>
-      <div id="bestGrid" class="product-grid four"></div>
-    </section>
-
-    <section class="closing">
+    <section class="closing compact-closing">
       <div class="shell closing-inner">
-        <div><p class="eyebrow">READY TO FIND YOUR PERFECT HAIR?</p><h2>Found something you love?</h2><p>Send us a message and we’ll help you finish your order on WhatsApp.</p></div>
+        <div><p class="eyebrow">NEED HELP CHOOSING?</p><h2>Seen something you love?</h2><p>Send us the wig and we’ll help you finish your order on WhatsApp.</p></div>
         <a class="btn primary" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">Chat with HairsByGiftee</a>
       </div>
     </section>
   </main>
 
-  <footer class="shell footer">
+  <footer class="shell footer compact-footer">
     <div class="logo"><span>HairsByGiftee</span><small>BEAUTY. CONFIDENCE. YOU.</small></div>
     <div><a href="#shop">Shop</a><a href="#deals">Hot Deals</a><a href="#reviews">Reviews</a></div>
   </footer>
 
-  <script type="module" src="./app.js"></script>
+  <div id="productModal" class="product-modal" hidden>
+    <button id="modalBackdrop" class="modal-backdrop" type="button" aria-label="Close product details"></button>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button id="modalClose" class="modal-close" type="button" aria-label="Close">×</button>
+      <div class="modal-gallery">
+        <div class="modal-main-image"><img id="modalImage" src="" alt=""></div>
+        <div id="modalThumbs" class="modal-thumbs"></div>
+      </div>
+      <div class="modal-info">
+        <p id="modalCategory" class="eyebrow"></p>
+        <h2 id="modalTitle"></h2>
+        <p id="modalDetail" class="modal-detail"></p>
+        <div id="modalPrice" class="modal-price"></div>
+        <p id="modalStock" class="modal-stock"></p>
+        <a id="modalBuy" class="btn primary modal-buy" target="_blank" rel="noreferrer">Buy on WhatsApp</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js?v=store-20260923-2"></script>
 </body>
 </html>
