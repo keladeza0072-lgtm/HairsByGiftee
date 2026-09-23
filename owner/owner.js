@@ -1,4 +1,4 @@
-import { auth, db, storage } from "../firebase-client.js";
+import { auth, db, storage } from "../firebase-client.js?v=owner-20260923-2";
 import {
   signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -119,13 +119,6 @@ function wireActions(){
 
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 document.querySelector("#logoutBtn").onclick=()=>signOut(auth);
-document.querySelector("#togglePassword").onclick=()=>{
-  const input=document.querySelector("#passwordInput");
-  const show=input.type==="password";
-  input.type=show?"text":"password";
-  document.querySelector("#togglePassword").textContent=show?"Hide":"Show";
-};
-
 document.querySelector("#resetPasswordBtn").onclick=async()=>{
   const err=document.querySelector("#loginError"),status=document.querySelector("#loginStatus");
   err.hidden=true; status.hidden=true;
