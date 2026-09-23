@@ -156,7 +156,9 @@
     }
   });
 
-  if(sessionStorage.getItem("hbg_id_token")) openDashboard();
+  window.addEventListener("load",function(){
+    if(sessionStorage.getItem("hbg_id_token")) openDashboard();
+  });
 })();
 </script>
 <script>
