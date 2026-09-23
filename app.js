@@ -13,11 +13,10 @@ const fallback={
     {id:"r1",name:"Amara T.",rating:5,quote:"The hair is so soft and true to length. I keep getting compliments.",published:true,image:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=500&q=80"},
     {id:"r2",name:"Chinaza O.",rating:5,quote:"This is my third order and the quality is always top tier.",published:true,image:""},
     {id:"r3",name:"Ifunanya E.",rating:5,quote:"It looks so natural and the install was simple. I love it.",published:true,image:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80"}
-  ],
-  announcements:[{id:"a1",message:"Global delivery available • 3–6 day nationwide shipping",active:true}]
+  ]
 };
 
-const state={products:fallback.products,reviews:fallback.reviews,announcements:fallback.announcements};
+const state={products:fallback.products,reviews:fallback.reviews};
 const rates={NGN:{s:"₦",r:1,d:0},USD:{s:"$",r:.00063,d:2},GBP:{s:"£",r:.00047,d:2},GHS:{s:"GH₵",r:.0062,d:2},XAF:{s:"FCFA ",r:.36,d:0}};
 let currency=localStorage.getItem("hbg_currency")||"NGN";
 let activeCategory="All";
@@ -83,12 +82,6 @@ function renderShop(){
   wireCards();
 }
 
-function renderDeals(){
-  const products=state.products.filter(p=>p.available!==false&&p.hotDeal).slice(0,3);
-  document.querySelector("#dealGrid").innerHTML=products.length?products.map(p=>productCard(p,true)).join(""):'<div class="empty">No hot deals right now.</div>';
-  wireCards();
-}
-
 function reviewHtml(r){
   const photo=r.image?`<div class="review-photo"><img src="${esc(r.image)}" alt="${esc(r.name)}" loading="lazy"></div>`:"";
   return `<article class="review-slide ${r.image?"has-photo":"text-only"}">
@@ -151,9 +144,6 @@ function closeModal(){
 }
 
 function render(){
-  const ann=state.announcements.find(a=>a.active);
-  document.querySelector("#announcement").textContent=(ann||fallback.announcements[0]).message;
-  renderDeals();
   renderShop();
   renderReview();
   restartReviewTimer();
@@ -189,4 +179,4 @@ reviewSlider.addEventListener("focusin",()=>clearInterval(reviewTimer));
 reviewSlider.addEventListener("focusout",restartReviewTimer);
 
 render();
-["products","reviews","announcements"].forEach(liveCollection);
+["products","reviews"].forEach(liveCollection);
