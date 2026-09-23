@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../styles.css?v=owner-20260923-2">
 </head>
 <body class="admin-body">
   <section id="loginView" class="login-view">
@@ -42,6 +42,19 @@
       <div id="screen"></div>
     </main>
   </div>
-  <script type="module" src="./owner.js"></script>
+  <script>
+  (function(){
+    const toggle=document.getElementById("togglePassword");
+    const input=document.getElementById("passwordInput");
+    if(toggle&&input){
+      toggle.addEventListener("click",function(){
+        const showing=input.type==="text";
+        input.type=showing?"password":"text";
+        toggle.textContent=showing?"Show":"Hide";
+      });
+    }
+  })();
+</script>
+<script type="module" src="./owner.js?v=owner-20260923-2"></script>
 </body>
 </html>
