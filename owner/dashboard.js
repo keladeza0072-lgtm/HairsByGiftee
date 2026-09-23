@@ -13,6 +13,7 @@ const screen=()=>document.querySelector("#screen");
 
 function fv(v){
   if(v===null||v===undefined)return {nullValue:null};
+  if(Array.isArray(v))return {arrayValue:{values:v.map(fv)}};
   if(typeof v==="boolean")return {booleanValue:v};
   if(typeof v==="number")return Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};
   if(v instanceof Date)return {timestampValue:v.toISOString()};
@@ -30,6 +31,7 @@ function valueFrom(v){
   if("doubleValue" in v)return Number(v.doubleValue);
   if("booleanValue" in v)return v.booleanValue;
   if("timestampValue" in v)return v.timestampValue;
+  if("arrayValue" in v)return (v.arrayValue.values||[]).map(valueFrom);
   if("nullValue" in v)return null;
   return null;
 }
@@ -85,6 +87,11 @@ async function upload(file,folder){
   if(!res.ok)throw new Error(data?.error?.message||"Upload failed");
   return STORAGE_BASE+"/"+encodeURIComponent(objectName)+"?alt=media";
 }
+async function uploadMany(files,folder){
+  const out=[];
+  for(const file of files) out.push(await upload(file,folder));
+  return out;
+}
 async function load(){
   const [products,reviews,announcements]=await Promise.all([
     listCollection("products"),listCollection("reviews"),listCollection("announcements")
@@ -113,7 +120,7 @@ function products(){
     <label class="field">Price (₦)<input name="price" type="number" min="0" required value="${edit?.price||""}"></label>
     <label class="field">Category<select name="category"><option>Bone Straight</option><option>Curly</option><option>Bob Wigs</option><option>Coloured Wigs</option><option>Other</option></select></label>
     <label class="field">Hair details<input name="detail" value="${esc(edit?.detail||"")}" placeholder='22” • 200% • HD Lace'></label>
-    <label class="field full">Product photo<input name="imageFile" type="file" accept="image/*">${edit?.image?'<small>Leave blank to keep the current photo.</small>':""}</label>
+    <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple><small>Select several photos at once. The first photo is used on the product card. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
     <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Available</label>
     <label class="check"><input name="bestseller" type="checkbox" ${edit?.bestseller?"checked":""}> Bestseller</label>
     <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Changes":"Publish Product"}</button>${edit?'<button class="mini" id="cancelEdit" type="button">Cancel</button>':""}</div>
@@ -161,9 +168,12 @@ function wireActions(){
 
   const pf=document.querySelector("#productForm");
   if(pf)pf.onsubmit=async e=>{e.preventDefault();setBusy(pf,true);try{
-    const f=new FormData(pf),old=state.products.find(x=>x.id===editingId),file=pf.elements.imageFile.files[0];
-    const image=file?await upload(file,"products"):(old?.image||"");
-    const data={name:f.get("name").trim(),price:Number(f.get("price")),category:f.get("category"),detail:f.get("detail").trim(),image,available:f.get("available")==="on",bestseller:f.get("bestseller")==="on",updatedAt:new Date()};
+    const f=new FormData(pf),old=state.products.find(x=>x.id===editingId),files=[...pf.elements.imageFile.files];
+    const existingImages=Array.isArray(old?.images)?old.images.filter(Boolean):(old?.image?[old.image]:[]);
+    const uploadedImages=files.length?await uploadMany(files,"products"):[];
+    const images=uploadedImages.length?[...existingImages,...uploadedImages]:existingImages;
+    const image=images[0]||old?.image||"";
+    const data={name:f.get("name").trim(),price:Number(f.get("price")),category:f.get("category"),detail:f.get("detail").trim(),image,images,available:f.get("available")==="on",bestseller:f.get("bestseller")==="on",updatedAt:new Date()};
     if(editingId)await updateDoc("products",editingId,data);else await createDoc("products",{...data,hotDeal:false,salePrice:null,createdAt:new Date()});
     editingId=null;await load();
   }catch(e){alert("Could not save product: "+e.message)}finally{setBusy(pf,false)}};
