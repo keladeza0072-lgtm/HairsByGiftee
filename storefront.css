@@ -21,7 +21,7 @@
 .search-inner button{border:0;background:none;font-size:26px;cursor:pointer}
 
 .hero-banner{display:grid;grid-template-columns:minmax(0,3.15fr) minmax(310px,1fr);min-height:475px;background:#ead8cd;overflow:hidden}
-.hero-image{background-image:url("https://images.pexels.com/photos/32782509/pexels-photo-32782509/free-photo-of-stylish-studio-portrait-of-three-black-women.jpeg?auto=compress&cs=tinysrgb&w=1600");background-size:cover;background-position:center 35%}
+.hero-image{background-image:url("./assets/hero-approved-q80.jpg");background-size:cover;background-position:center 35%}
 .hero-panel{background:linear-gradient(90deg,#e7d5ca,#efdfd6);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:36px}
 .hero-panel p{font-size:10px;letter-spacing:.34em;margin:0 0 20px;white-space:nowrap}
 .hero-panel h1{font-family:"Playfair Display",serif;font-size:72px;line-height:.9;font-weight:500;letter-spacing:.03em;margin:0;color:#38231d}
@@ -73,7 +73,7 @@
 .review-dots button.active{background:#fff}
 
 .final-cta{display:grid;grid-template-columns:1fr 1fr;min-height:330px;background:#f7f0eb}
-.final-cta-photo{background-image:url("https://images.pexels.com/photos/29824659/pexels-photo-29824659/free-photo-of-smiling-woman-holding-hair-extensions.jpeg?auto=compress&cs=tinysrgb&w=1200");background-size:cover;background-position:center 35%}
+.final-cta-photo{background-image:url("./assets/cta-approved-q80.jpg");background-size:cover;background-position:center 35%}
 .final-cta-copy{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
 .final-cta h2{font-size:46px;margin:0 0 28px}
 .final-cta a{min-width:330px;min-height:62px;background:var(--brown);color:#fff;border-radius:34px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;font-size:18px}
@@ -181,4 +181,12 @@
   .hero-banner,.hero-image{min-height:405px}
   .hero-panel h1{font-size:42px}
   .product-image{height:220px}
+}
+
+/* Final branded asset lock */
+.hero-image{background-image:url("./assets/hero-approved-q80.jpg")!important;background-size:cover;background-position:center 35%}
+.final-cta-photo{background-image:url("./assets/cta-approved-q80.jpg")!important;background-size:cover;background-position:center 35%}
+@media(max-width:620px){
+  .hero-image{background-position:center 30%}
+  .final-cta-photo{background-position:center 32%}
 }
