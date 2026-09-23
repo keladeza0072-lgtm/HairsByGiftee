@@ -43,7 +43,7 @@
       <button data-tab="home" class="active">Home</button>
       <button data-tab="products">Products</button>
       <button data-tab="deals">Hot Deals</button>
-      <button data-tab="announcements">Announcements</button>
+      
       <button data-tab="reviews">Reviews</button>
       <a href="../" target="_blank">View Website ↗</a>
       <button id="logoutBtn">Log out</button>
@@ -168,7 +168,7 @@ const BUCKET="hairsbygiftee.firebasestorage.app";
 const FIRESTORE_BASE="https://firestore.googleapis.com/v1/projects/"+PROJECT+"/databases/(default)/documents";
 const STORAGE_BASE="https://firebasestorage.googleapis.com/v0/b/"+BUCKET+"/o";
 
-const state={products:[],reviews:[],announcements:[]};
+const state={products:[],reviews:[]};
 let tab="home",editingId=null;
 
 const token=()=>sessionStorage.getItem("hbg_id_token")||"";
@@ -258,10 +258,10 @@ async function uploadMany(files,folder){
   return out;
 }
 async function load(){
-  const [products,reviews,announcements]=await Promise.all([
-    listCollection("products"),listCollection("reviews"),listCollection("announcements")
+  const [products,reviews]=await Promise.all([
+    listCollection("products"),listCollection("reviews")
   ]);
-  state.products=products;state.reviews=reviews;state.announcements=announcements;
+  state.products=products;state.reviews=reviews;
   render();
 }
 function setBusy(form,busy,label="Saving…"){
@@ -273,8 +273,8 @@ function setBusy(form,busy,label="Saving…"){
 function home(){
   const current=state.announcements.find(x=>x.active);
   return `<h1 class="admin-title">Welcome back</h1><p class="muted">Everything here updates the live website.</p>
-  <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="announcements">✦<b>Announcement</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
-  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.products.filter(x=>x.hotDeal).length} hot deals • ${state.reviews.filter(x=>x.published!==false).length} reviews</p><p class="muted">Current announcement: ${esc(current?.message||"None")}</p></div>
+  <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
+  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.products.filter(x=>x.hotDeal).length} hot deals • ${state.reviews.filter(x=>x.published!==false).length} reviews</p></div>
   ${state.products.length===0?'<div class="panel"><b>Starting fresh?</b><p class="muted">Load the starter catalogue once, then replace it with the real stock.</p><button id="seedBtn" class="btn primary">Load starter catalogue</button></div>':""}`;
 }
 function products(){
@@ -297,18 +297,13 @@ function deals(){
   <form id="dealForm" class="panel form-grid"><label class="field">Product<select name="product">${state.products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></label><label class="field">Sale price (₦)<input name="salePrice" type="number" min="0" required></label><div class="field full"><button class="btn primary" type="submit">Publish Deal</button></div></form>
   <div class="panel admin-list">${state.products.filter(p=>p.hotDeal).map(p=>`<div class="row"><div><b>${esc(p.name)}</b><br><small>${naira(p.price)} → ${naira(p.salePrice)}</small></div><span>Live deal</span><button class="mini danger" data-remove-deal="${p.id}">Remove</button></div>`).join("")||"<p>No hot deals yet.</p>"}</div>`;
 }
-function announcements(){
-  return `<h1 class="admin-title">Announcements</h1><p class="muted">Show one short message at the top of the website.</p>
-  <form id="announcementForm" class="panel"><label class="field">Message<textarea name="message" maxlength="160" required></textarea></label><br><button class="btn primary" type="submit">Publish Announcement</button></form>
-  <div class="panel admin-list">${state.announcements.map(a=>`<div class="row"><div><b>${esc(a.message)}</b><br><small>${a.active?"Showing now":"Hidden"}</small></div><button class="mini" data-show-ann="${a.id}">${a.active?"Hide":"Show"}</button><button class="mini danger" data-delete-ann="${a.id}">Delete</button></div>`).join("")||"<p>No announcements yet.</p>"}</div>`;
-}
 function reviews(){
   return `<h1 class="admin-title">Reviews</h1><p class="muted">Publish customer feedback and photos.</p>
   <form id="reviewForm" class="panel form-grid"><label class="field">Customer name<input name="name" required></label><label class="field">Rating<select name="rating"><option>5</option><option>4</option><option>3</option></select></label><label class="field full">Customer photo<input name="imageFile" type="file" accept="image/*"></label><label class="field full">What did they say?<textarea name="quote" required></textarea></label><div class="field full"><button class="btn primary" type="submit">Publish Review</button></div></form>
   <div class="panel admin-list">${state.reviews.map(r=>`<div class="row"><div><b>${esc(r.name)} • ${"★".repeat(r.rating||5)}</b><br><small>“${esc(r.quote)}”</small></div><button class="mini" data-toggle-review="${r.id}">${r.published===false?"Show":"Hide"}</button><button class="mini danger" data-delete-review="${r.id}">Delete</button></div>`).join("")||"<p>No reviews yet.</p>"}</div>`;
 }
 function render(){
-  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():tab==="announcements"?announcements():reviews();
+  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():reviews();
   screen().querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>switchTab(b.dataset.go));
   wireActions();
 }
@@ -350,11 +345,6 @@ function wireActions(){
   const df=document.querySelector("#dealForm");
   if(df)df.onsubmit=async e=>{e.preventDefault();const f=new FormData(df);await updateDoc("products",f.get("product"),{hotDeal:true,salePrice:Number(f.get("salePrice")),updatedAt:new Date()});await load()};
   document.querySelectorAll("[data-remove-deal]").forEach(b=>b.onclick=async()=>{await updateDoc("products",b.dataset.removeDeal,{hotDeal:false,salePrice:null,updatedAt:new Date()});await load()});
-
-  const af=document.querySelector("#announcementForm");
-  if(af)af.onsubmit=async e=>{e.preventDefault();const f=new FormData(af);for(const a of state.announcements)await updateDoc("announcements",a.id,{active:false});await createDoc("announcements",{message:f.get("message").trim(),active:true,createdAt:new Date()});await load()};
-  document.querySelectorAll("[data-show-ann]").forEach(b=>b.onclick=async()=>{const target=state.announcements.find(x=>x.id===b.dataset.showAnn);for(const a of state.announcements)await updateDoc("announcements",a.id,{active:a.id===target.id?!target.active:false});await load()});
-  document.querySelectorAll("[data-delete-ann]").forEach(b=>b.onclick=async()=>{await deleteDoc("announcements",b.dataset.deleteAnn);await load()});
 
   const rf=document.querySelector("#reviewForm");
   if(rf)rf.onsubmit=async e=>{e.preventDefault();setBusy(rf,true);try{
