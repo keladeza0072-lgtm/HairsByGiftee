@@ -468,3 +468,250 @@
   .hero-panel{padding:82px 14px 20px}
   .hero-panel h1{font-size:44px}
 }
+
+
+/* Responsive hero + worldwide delivery polish */
+.hero-banner{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) clamp(285px,29vw,420px);
+  min-height:0;
+  height:auto;
+  background:#ead8cd;
+  overflow:hidden;
+}
+.hero-image{
+  background-image:url("./assets/hero-desktop.webp?v=20260924-7")!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  aspect-ratio:1740 / 474;
+  min-height:0!important;
+}
+.hero-panel{
+  position:static!important;
+  inset:auto!important;
+  min-width:0;
+  background:linear-gradient(90deg,#e7d5ca,#efdfd6)!important;
+  color:var(--ink)!important;
+  padding:18px 22px!important;
+}
+.hero-panel .hero-kicker{
+  margin:0 0 10px!important;
+  max-width:none!important;
+  color:#5b463e;
+  font-size:8px!important;
+  line-height:1.35!important;
+  letter-spacing:.28em!important;
+  white-space:nowrap!important;
+}
+.hero-panel h1{
+  margin:0!important;
+  color:#38231d!important;
+  font-size:clamp(48px,4.8vw,68px)!important;
+  line-height:.88!important;
+}
+.hero-delivery{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:7px 10px;
+  margin:14px 0 0!important;
+  max-width:300px!important;
+  color:#6f5d56!important;
+  font-size:10px!important;
+  line-height:1.3!important;
+  letter-spacing:0!important;
+  white-space:normal!important;
+}
+.delivery-flags{
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+  font-size:15px;
+  letter-spacing:.12em;
+  white-space:nowrap;
+}
+.hero-panel>a{
+  margin-top:16px!important;
+  padding:12px 32px!important;
+  font-size:12px!important;
+}
+.product-image{
+  height:auto!important;
+  aspect-ratio:.82;
+}
+.deals-section{
+  padding:28px 0 30px;
+}
+.deals-section>.shell{
+  display:grid;
+  grid-template-columns:170px minmax(0,1fr);
+  align-items:start;
+  gap:22px;
+}
+.deals-head{
+  display:block;
+  margin:0;
+  padding-top:4px;
+}
+.deals-head h2{
+  font-size:34px;
+  line-height:1;
+  margin:0 0 12px;
+}
+.deals-toggle{
+  font-size:11px;
+}
+.deal-rail{
+  min-width:0;
+  padding-bottom:5px;
+}
+.site-footer{
+  display:grid;
+  grid-template-columns:auto minmax(220px,1fr) auto;
+  align-items:center;
+  gap:24px;
+}
+.footer-brand{
+  font-family:"Playfair Display",serif;
+  font-size:22px;
+}
+.footer-delivery{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  text-align:center;
+}
+.footer-delivery small,
+.footer-socials{
+  color:var(--muted);
+}
+.footer-delivery small{
+  font-size:10px;
+}
+
+@media(max-width:900px){
+  .hero-banner{
+    grid-template-columns:1fr;
+    min-height:0!important;
+    height:auto;
+  }
+  .hero-image{
+    background-image:url("./assets/hero-mobile.webp?v=20260924-7")!important;
+    background-size:cover!important;
+    background-position:center center!important;
+    width:100%;
+    aspect-ratio:1080 / 474;
+    min-height:0!important;
+  }
+  .hero-panel{
+    padding:24px 18px 28px!important;
+  }
+  .hero-panel .hero-kicker{
+    font-size:8px!important;
+    white-space:normal!important;
+  }
+  .hero-panel h1{
+    font-size:50px!important;
+  }
+  .hero-delivery{
+    margin-top:12px!important;
+  }
+  .hero-panel>a{
+    margin-top:15px!important;
+  }
+  .deals-section>.shell{
+    grid-template-columns:145px minmax(0,1fr);
+    gap:16px;
+  }
+  .deals-head h2{font-size:30px}
+  .site-footer{
+    grid-template-columns:1fr;
+    gap:8px;
+    justify-items:center;
+    text-align:center;
+  }
+}
+
+@media(max-width:620px){
+  .hero-image{
+    aspect-ratio:1080 / 474;
+  }
+  .hero-panel{
+    padding:20px 14px 24px!important;
+  }
+  .hero-panel h1{
+    font-size:42px!important;
+  }
+  .hero-delivery{
+    flex-direction:column;
+    gap:4px;
+    font-size:9px!important;
+  }
+  .delivery-flags{
+    font-size:14px;
+  }
+  .benefit-strip{
+    min-height:0!important;
+    padding:7px 2px!important;
+  }
+  .benefit-item{
+    min-height:52px!important;
+  }
+  .shop-section{
+    padding:28px 0 34px;
+  }
+  .product-image{
+    aspect-ratio:.82;
+  }
+  .deals-section{
+    padding:26px 0 28px;
+  }
+  .deals-section>.shell{
+    display:block;
+  }
+  .deals-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+    padding-top:0;
+  }
+  .deals-head h2{
+    font-size:30px;
+    margin:0;
+  }
+  .deal-card{
+    flex-basis:160px;
+  }
+  .deal-image{
+    height:auto;
+    aspect-ratio:.92;
+  }
+  .reviews-section{
+    padding:28px 0 24px;
+  }
+  .final-cta-copy{
+    padding:26px 16px;
+  }
+  .site-footer{
+    padding:18px 0;
+  }
+  .footer-brand{
+    font-size:20px;
+  }
+  .footer-delivery{
+    flex-direction:column;
+    gap:3px;
+  }
+  .footer-socials{
+    font-size:9px;
+  }
+}
+
+@media(max-width:390px){
+  .hero-panel h1{
+    font-size:39px!important;
+  }
+}
