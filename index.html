@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=owner-safe-20260923" />
-  <link rel="stylesheet" href="./storefront.css?v=store-20260924-4" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260924-5" />
 </head>
 <body class="storefront">
   <header class="site-header">
@@ -66,6 +66,16 @@
       <div id="shopGrid" class="product-grid"></div>
     </section>
 
+    <section id="deals" class="deals-section">
+      <div class="shell">
+        <div class="deals-head">
+          <h2>Hot Deals</h2>
+          <button id="dealsToggle" class="deals-toggle" type="button" aria-expanded="false">View all deals</button>
+        </div>
+        <div id="dealRail" class="deal-rail" aria-label="Hot deal products"></div>
+      </div>
+    </section>
+
     <section id="reviews" class="reviews-section">
       <div class="shell">
         <h2>Happy Customers</h2>
@@ -113,6 +123,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260924-1"></script>
+  <script type="module" src="./app.js?v=store-20260924-2"></script>
 </body>
 </html>
