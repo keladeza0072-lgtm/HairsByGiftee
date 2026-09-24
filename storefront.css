@@ -715,3 +715,41 @@
     font-size:39px!important;
   }
 }
+
+/* Reliable inline country flags — no emoji fallback */
+.delivery-flags{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:0!important;
+  letter-spacing:0!important;
+  line-height:1;
+  white-space:nowrap;
+}
+.flag-icon{
+  width:22px;
+  height:15px;
+  display:block;
+  flex:0 0 auto;
+  border-radius:2px;
+  box-shadow:0 0 0 1px rgba(58,32,24,.12);
+}
+.hero-delivery .flag-icon{
+  width:21px;
+  height:14px;
+}
+.footer-delivery .flag-icon{
+  width:20px;
+  height:13px;
+}
+@media(max-width:620px){
+  .flag-icon,
+  .hero-delivery .flag-icon{
+    width:20px;
+    height:13px;
+  }
+  .footer-delivery .flag-icon{
+    width:19px;
+    height:12px;
+  }
+}
