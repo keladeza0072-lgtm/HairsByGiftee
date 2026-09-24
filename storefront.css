@@ -286,3 +286,6 @@
   .whatsapp-header span:last-child{display:none}
   .whatsapp-header{width:42px;padding:0;justify-content:center}
 }
+
+.benefit-svg{width:28px;height:28px;fill:none;stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+@media(max-width:620px){.benefit-svg{width:17px;height:17px}}
