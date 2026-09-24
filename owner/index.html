@@ -362,10 +362,10 @@ function home(){
 
 function products(){
   const edit=state.products.find(x=>x.id===editingId);
-  return `<h1 class="admin-title">Products</h1><p class="muted">The regular price entered here is the price shown normally in Shop Wigs. Discount prices are managed separately under Hot Deals.</p>
+  return `<h1 class="admin-title">Products</h1><p class="muted">Products and Hot Deals are separate. The price entered here is the regular price shown in Shop Wigs.</p>
   <form id="productForm" class="panel form-grid">
     <label class="field">Product name<input name="name" required value="${esc(edit?.name||"")}"></label>
-    <label class="field">Regular price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}">${edit?.hotDeal&&edit?.salePrice?`<small>Current Hot Deal price: ${naira(edit.salePrice)}. Manage it under Hot Deals.</small>`:""}</label>
+    <label class="field">Regular price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}"></label>
     <label class="field">Category<select name="category">${["Bone Straight","Curly","Bob Wigs","Coloured Wigs","Other"].map(c=>`<option ${edit?.category===c?"selected":""}>${c}</option>`).join("")}</select></label>
     <label class="field">Hair details<input name="detail" value="${esc(edit?.detail||"")}" placeholder='22” • 200% • HD Lace'></label>
     <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select several photos at once. The first photo is used on the product card. Large photos are automatically optimized for fast loading at high quality. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
@@ -373,7 +373,7 @@ function products(){
     <label class="check"><input name="bestseller" type="checkbox" ${edit?.bestseller?"checked":""}> Bestseller</label>
     <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Changes":"Publish Product"}</button>${edit?'<button class="mini" id="cancelEdit" type="button">Cancel</button>':""}</div>
   </form>
-  <div class="panel admin-list">${state.products.map(p=>`<div class="row product-row"><div class="row-product">${p.image?`<img src="${esc(p.image)}" alt="">`:""}<div><b>${esc(p.name)}</b><br><small>${esc(p.detail||"")} • Regular ${naira(p.price)}${p.hotDeal&&p.salePrice?` • Deal ${naira(p.salePrice)}`:""}</small></div></div><span>${p.available===false?"Sold out":"Available"}</span><div class="row-actions"><button class="mini" data-edit-product="${p.id}">Edit</button><button class="mini" data-toggle-product="${p.id}">${p.available===false?"Make available":"Mark sold out"}</button><button class="mini danger" data-delete-product="${p.id}">Delete</button></div></div>`).join("")||"<p>No products yet.</p>"}</div>`;
+  <div class="panel admin-list">${state.products.map(p=>`<div class="row product-row"><div class="row-product">${p.image?`<img src="${esc(p.image)}" alt="">`:""}<div><b>${esc(p.name)}</b><br><small>${esc(p.detail||"")} • ${naira(p.price)}</small></div></div><span>${p.available===false?"Sold out":"Available"}</span><div class="row-actions"><button class="mini" data-edit-product="${p.id}">Edit</button><button class="mini" data-toggle-product="${p.id}">${p.available===false?"Make available":"Mark sold out"}</button><button class="mini danger" data-delete-product="${p.id}">Delete</button></div></div>`).join("")||"<p>No products yet.</p>"}</div>`;
 }
 function deals(){
   const edit=state.hotDeals.find(x=>x.id===editingDealId);
