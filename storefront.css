@@ -197,13 +197,13 @@
 
 /* Clean fixed visual shell */
 .hero-image{
-  background-image:url("./assets/hero-clean.webp?v=20260924-2")!important;
+  background-image:url("./assets/hero-final.webp?v=20260924-4")!important;
   background-size:cover;
   background-position:center 38%;
   background-repeat:no-repeat;
 }
 .final-cta-photo{
-  background-image:url("./assets/cta-clean.webp?v=20260924-2")!important;
+  background-image:url("./assets/cta-final.webp?v=20260924-4")!important;
   background-size:cover;
   background-position:center 42%;
   background-repeat:no-repeat;
@@ -247,11 +247,11 @@
   white-space:nowrap;
 }
 .hero-image{
-  background-image:url("./assets/hero-clean.webp?v=20260924-3")!important;
+  background-image:url("./assets/hero-final.webp?v=20260924-4")!important;
   image-rendering:auto;
 }
 .final-cta-photo{
-  background-image:url("./assets/cta-clean.webp?v=20260924-3")!important;
+  background-image:url("./assets/cta-final.webp?v=20260924-4")!important;
   image-rendering:auto;
 }
 .product h3{
@@ -289,3 +289,33 @@
 
 .benefit-svg{width:28px;height:28px;fill:none;stroke:var(--ink);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 @media(max-width:620px){.benefit-svg{width:17px;height:17px}}
+
+/* Verified final image assets and spacing polish */
+.hero-image{
+  background-image:url("./assets/hero-final.webp?v=20260924-4")!important;
+  background-size:cover;
+  background-position:center 38%;
+  background-repeat:no-repeat;
+}
+.final-cta-photo{
+  background-image:url("./assets/cta-final.webp?v=20260924-4")!important;
+  background-size:cover;
+  background-position:center 42%;
+  background-repeat:no-repeat;
+}
+.storefront .whatsapp-header,
+.storefront .final-cta a{
+  color:#fff!important;
+}
+.shop-section{padding-top:40px}
+.reviews-section{padding-top:32px;padding-bottom:28px}
+.final-cta-copy{padding-inline:34px}
+@media(max-width:900px){
+  .hero-image{background-position:center 36%}
+  .final-cta-photo{background-position:center 42%}
+}
+@media(max-width:620px){
+  .hero-image{background-position:center 34%}
+  .final-cta-photo{background-position:center 40%}
+  .benefit-strip{padding-block:7px}
+}
