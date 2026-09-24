@@ -261,18 +261,68 @@ async function updateDoc(name,id,data){
 async function deleteDoc(name,id){
   return request(FIRESTORE_BASE+"/"+name+"/"+encodeURIComponent(id),{method:"DELETE"});
 }
+async function optimizeUploadImage(file){
+  if(!file||!String(file.type||"").startsWith("image/"))return file;
+  if(/image\/(gif|svg\+xml)/i.test(file.type))return file;
+
+  const MAX_DIMENSION=2000;
+  const KEEP_ORIGINAL_UNDER=1200*1024;
+  const QUALITY=0.92;
+  let objectUrl="";
+
+  try{
+    objectUrl=URL.createObjectURL(file);
+    const img=await new Promise((resolve,reject)=>{
+      const el=new Image();
+      el.onload=()=>resolve(el);
+      el.onerror=reject;
+      el.src=objectUrl;
+    });
+
+    const width=img.naturalWidth||img.width;
+    const height=img.naturalHeight||img.height;
+    if(!width||!height)return file;
+
+    const largest=Math.max(width,height);
+    if(largest<=MAX_DIMENSION&&file.size<=KEEP_ORIGINAL_UNDER)return file;
+
+    const scale=Math.min(1,MAX_DIMENSION/largest);
+    const outWidth=Math.max(1,Math.round(width*scale));
+    const outHeight=Math.max(1,Math.round(height*scale));
+    const canvas=document.createElement("canvas");
+    canvas.width=outWidth;
+    canvas.height=outHeight;
+    const ctx=canvas.getContext("2d",{alpha:true});
+    if(!ctx)return file;
+    ctx.imageSmoothingEnabled=true;
+    ctx.imageSmoothingQuality="high";
+    ctx.drawImage(img,0,0,outWidth,outHeight);
+
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",QUALITY));
+    if(!blob||blob.size>=file.size)return file;
+
+    const base=(file.name||"photo").replace(/\.[^.]+$/,"").replace(/[^a-zA-Z0-9._-]/g,"-")||"photo";
+    return new File([blob],base+".webp",{type:"image/webp",lastModified:file.lastModified||Date.now()});
+  }catch{
+    return file;
+  }finally{
+    if(objectUrl)URL.revokeObjectURL(objectUrl);
+  }
+}
+
 async function upload(file,folder,retried=false){
   if(!file)return "";
-  const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"-");
+  const uploadFile=await optimizeUploadImage(file);
+  const safe=uploadFile.name.replace(/[^a-zA-Z0-9._-]/g,"-");
   const objectName=folder+"/"+Date.now()+"-"+safe;
   const res=await fetch(STORAGE_BASE+"?uploadType=media&name="+encodeURIComponent(objectName),{
     method:"POST",
-    headers:{"Authorization":"Bearer "+token(),"Content-Type":file.type||"application/octet-stream"},
-    body:file
+    headers:{"Authorization":"Bearer "+token(),"Content-Type":uploadFile.type||"application/octet-stream"},
+    body:uploadFile
   });
   if(res.status===401&&!retried){
     await refreshSession();
-    return upload(file,folder,true);
+    return upload(uploadFile,folder,true);
   }
   const data=await res.json().catch(()=>({}));
   if(!res.ok)throw new Error(data?.error?.message||"Upload failed");
@@ -318,7 +368,7 @@ function products(){
     <label class="field">Regular price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}">${edit?.hotDeal&&edit?.salePrice?`<small>Current Hot Deal price: ${naira(edit.salePrice)}. Manage it under Hot Deals.</small>`:""}</label>
     <label class="field">Category<select name="category">${["Bone Straight","Curly","Bob Wigs","Coloured Wigs","Other"].map(c=>`<option ${edit?.category===c?"selected":""}>${c}</option>`).join("")}</select></label>
     <label class="field">Hair details<input name="detail" value="${esc(edit?.detail||"")}" placeholder='22” • 200% • HD Lace'></label>
-    <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select several photos at once. The first photo is used on the product card. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
+    <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select several photos at once. The first photo is used on the product card. Large photos are automatically optimized for fast loading at high quality. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
     <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Available</label>
     <label class="check"><input name="bestseller" type="checkbox" ${edit?.bestseller?"checked":""}> Bestseller</label>
     <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Changes":"Publish Product"}</button>${edit?'<button class="mini" id="cancelEdit" type="button">Cancel</button>':""}</div>
@@ -332,7 +382,7 @@ function deals(){
     <label class="field">Deal title<input name="name" required value="${esc(edit?.name||"")}" placeholder="e.g. Weekend Wig Bundle"></label>
     <label class="field">Offer price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}"></label>
     <label class="field full">Offer description<textarea name="detail" maxlength="700" required placeholder="Describe the wigs included, lengths, offer details, or anything the customer should know.">${esc(edit?.detail||"")}</textarea></label>
-    <label class="field full">Deal photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select one or several photos. The first image is the cover photo. Leave blank while editing to keep the current photos.</small></label>
+    <label class="field full">Deal photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select one or several photos. The first image is the cover photo. Large photos are automatically optimized for fast loading at high quality. Leave blank while editing to keep the current photos.</small></label>
     <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Show this deal on the website</label>
     <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Deal":"Publish Deal"}</button>${edit?'<button class="mini" id="cancelDealEdit" type="button">Cancel</button>':""}</div>
   </form>
@@ -352,7 +402,7 @@ function announcements(){
 
 function reviews(){
   return `<h1 class="admin-title">Reviews</h1><p class="muted">Publish customer feedback and photos.</p>
-  <form id="reviewForm" class="panel form-grid"><label class="field">Customer name<input name="name" required></label><label class="field">Rating<select name="rating"><option>5</option><option>4</option><option>3</option></select></label><label class="field full">Customer photo<input name="imageFile" type="file" accept="image/*"></label><label class="field full">What did they say?<textarea name="quote" required></textarea></label><div class="field full"><button class="btn primary" type="submit">Publish Review</button></div></form>
+  <form id="reviewForm" class="panel form-grid"><label class="field">Customer name<input name="name" required></label><label class="field">Rating<select name="rating"><option>5</option><option>4</option><option>3</option></select></label><label class="field full">Customer photo<input name="imageFile" type="file" accept="image/*"><small>Large photos are automatically optimized for fast loading at high quality.</small></label><label class="field full">What did they say?<textarea name="quote" required></textarea></label><div class="field full"><button class="btn primary" type="submit">Publish Review</button></div></form>
   <div class="panel admin-list">${state.reviews.map(r=>`<div class="row"><div><b>${esc(r.name)} • ${"★".repeat(r.rating||5)}</b><br><small>“${esc(r.quote)}”</small></div><button class="mini" data-toggle-review="${r.id}">${r.published===false?"Show":"Hide"}</button><button class="mini danger" data-delete-review="${r.id}">Delete</button></div>`).join("")||"<p>No reviews yet.</p>"}</div>`;
 }
 function render(){

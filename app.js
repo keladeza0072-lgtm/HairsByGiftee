@@ -50,7 +50,7 @@ const productImages=p=>{
 const productImageMarkup=p=>{
   const src=productImages(p)[0];
   return src
-    ? `<img src="${esc(src)}" alt="${esc(p.name||"Wig")}" loading="lazy">`
+    ? `<img src="${esc(src)}" alt="${esc(p.name||"Wig")}" loading="lazy" decoding="async">`
     : '<div class="product-image-placeholder" aria-hidden="true"></div>';
 };
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
@@ -194,7 +194,7 @@ function setModalImages(item){
     modalImage.alt="";
     modalImage.hidden=true;
   }
-  document.querySelector("#modalThumbs").innerHTML=imgs.length>1?imgs.map((src,i)=>`<button type="button" class="${i===0?"active":""}" data-thumb="${i}"><img src="${esc(src)}" alt=""></button>`).join(""):"";
+  document.querySelector("#modalThumbs").innerHTML=imgs.length>1?imgs.map((src,i)=>`<button type="button" class="${i===0?"active":""}" data-thumb="${i}"><img src="${esc(src)}" alt="" decoding="async"></button>`).join(""):"";
   document.querySelectorAll("[data-thumb]").forEach(btn=>btn.onclick=()=>{
     modalImage.src=imgs[Number(btn.dataset.thumb)];
     document.querySelectorAll("[data-thumb]").forEach(x=>x.classList.toggle("active",x===btn));
@@ -245,7 +245,7 @@ function closeModal(){
 }
 
 function reviewCard(r){
-  const image=r.image?`<img src="${esc(r.image)}" alt="${esc(r.name)}">`:'';
+  const image=r.image?`<img src="${esc(r.image)}" alt="${esc(r.name)}" loading="lazy" decoding="async">`:'';
   return `<article class="review-card ${r.image?"with-photo":"no-photo"}">
     ${image}
     <div>

@@ -1047,3 +1047,12 @@
     padding-right:15px;
   }
 }
+
+/* Performance hints — visual output unchanged */
+.product-image img,
+.deal-image img,
+.review-card img,
+.modal-main-image img,
+.modal-thumbs img{
+  content-visibility:auto;
+}
