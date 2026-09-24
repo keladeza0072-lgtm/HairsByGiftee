@@ -437,3 +437,34 @@
   .deal-view{height:32px;font-size:9px}
   .deal-rail.expanded{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 }
+
+/* Distinct-face hero refinement */
+.hero-banner{
+  grid-template-columns:minmax(0,2.6fr) minmax(330px,1fr);
+  min-height:340px;
+}
+.hero-image{
+  background-image:url("./assets/hero-distinct.webp?v=20260924-6")!important;
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+  background-color:#ead8cd;
+}
+.hero-panel h1{font-size:66px}
+@media(max-width:900px){
+  .hero-banner{grid-template-columns:1fr;min-height:440px}
+  .hero-image{
+    min-height:440px;
+    background-size:auto 100%;
+    background-position:center top;
+  }
+}
+@media(max-width:620px){
+  .hero-banner,.hero-image{min-height:390px}
+  .hero-image{
+    background-size:auto 100%;
+    background-position:center top;
+  }
+  .hero-panel{padding:82px 14px 20px}
+  .hero-panel h1{font-size:44px}
+}
