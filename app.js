@@ -187,9 +187,7 @@ function render(){
 
 function watch(name){
   onSnapshot(collection(db,name),snap=>{
-    if(!snap.empty){
-      state[name]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    }
+    state[name]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     render();
   },()=>render());
 }
