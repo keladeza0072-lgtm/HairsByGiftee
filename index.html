@@ -10,28 +10,45 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=owner-safe-20260923" />
-  <link rel="stylesheet" href="./storefront.css?v=store-20260924-11" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260924-12" />
 </head>
 <body class="storefront">
   <header class="site-header">
     <div class="shell header-inner">
-      <a class="brand-wordmark" href="#top">
+      <a class="brand-wordmark" href="#top" aria-label="HairsByGiftee home">
         <span>HairsByGiftee</span>
         <small>LUXURY HAIR FOR YOU</small>
       </a>
-      <nav class="main-nav" aria-label="Main navigation">
-        <a href="#top">Home</a>
+
+      <nav class="main-nav" aria-label="Primary navigation">
         <a href="#shop">Shop</a>
-        <a href="#contact">Contact</a>
+        <a href="#deals">Hot Deals</a>
       </nav>
+
       <div class="header-actions">
-        <button id="searchToggle" class="search-toggle" type="button" aria-label="Search wigs">
+        <button id="searchToggle" class="search-toggle icon-button" type="button" aria-label="Search wigs">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
-          <span>Search wigs...</span>
         </button>
-        <a class="whatsapp-header" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
-          <svg class="wa-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5C5 5.12 6.12 4 7.5 4h9C17.88 4 19 5.12 19 6.5v6c0 1.38-1.12 2.5-2.5 2.5H11l-4 3v-3H7.5C6.12 15 5 13.88 5 12.5v-6z"></path><circle cx="9" cy="9.5" r=".7"></circle><circle cx="12" cy="9.5" r=".7"></circle><circle cx="15" cy="9.5" r=".7"></circle></svg><span>Chat on WhatsApp</span>
-        </a>
+
+        <button id="menuToggle" class="menu-toggle icon-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navMenu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+        </button>
+
+        <div id="navMenu" class="nav-menu" hidden>
+          <a href="#top">Home</a>
+          <a class="mobile-menu-link" href="#shop">Shop</a>
+          <a class="mobile-menu-link" href="#deals">Hot Deals</a>
+          <a href="#reviews">Reviews</a>
+          <a href="#contact">Contact</a>
+          <a class="menu-whatsapp" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
+            <svg class="wa-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5C5 5.12 6.12 4 7.5 4h9C17.88 4 19 5.12 19 6.5v6c0 1.38-1.12 2.5-2.5 2.5H11l-4 3v-3H7.5C6.12 15 5 13.88 5 12.5v-6z"></path><circle cx="9" cy="9.5" r=".7"></circle><circle cx="12" cy="9.5" r=".7"></circle><circle cx="15" cy="9.5" r=".7"></circle></svg>
+            <span>Chat on WhatsApp</span>
+          </a>
+          <div class="menu-socials">
+            <a href="https://www.instagram.com/hairsbygiftee__/" target="_blank" rel="noreferrer">Instagram</a>
+            <a href="https://www.tiktok.com/@hairsbygiftee" target="_blank" rel="noreferrer">TikTok</a>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -157,6 +174,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260924-5"></script>
+  <script type="module" src="./app.js?v=store-20260924-6"></script>
 </body>
 </html>

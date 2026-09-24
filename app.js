@@ -24,6 +24,11 @@ const productImageMarkup=p=>{
     ? `<img src="${esc(src)}" alt="${esc(p.name||"Wig")}" loading="lazy">`
     : '<div class="product-image-placeholder" aria-hidden="true"></div>';
 };
+const activeSale=p=>{
+  const regular=Number(p.price||0);
+  const sale=Number(p.salePrice||0);
+  return p.hotDeal&&regular>0&&sale>0&&sale<regular?sale:0;
+};
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
   "Hi HairsByGiftee ❤️\nI'm interested in the "+p.name+".\n"+(p.detail||"")+"\nPrice: ₦"+Number(price).toLocaleString("en-NG")+"\n\nIs it currently available?"
 );
@@ -37,8 +42,8 @@ function visibleProducts(){
 }
 
 function productCard(p){
-  const sale=p.hotDeal&&p.salePrice;
-  const final=sale?p.salePrice:p.price;
+  const sale=activeSale(p);
+  const final=p.price;
   const badges=[
     p.bestseller?'<span class="badge badge-best">Bestseller</span>':"",
     sale?'<span class="badge badge-sale">Hot Deal</span>':""
@@ -84,7 +89,8 @@ function renderShop(){
 }
 
 function dealCard(p){
-  const final=p.salePrice||p.price;
+  const sale=activeSale(p);
+  const final=sale||p.price;
   return `<article class="deal-card" data-product-id="${esc(p.id)}" tabindex="0" role="button">
     <div class="deal-image">
       ${productImageMarkup(p)}
@@ -103,7 +109,7 @@ function renderDeals(){
   const rail=document.querySelector("#dealRail");
   if(!section||!rail)return;
   if(loading.products||loadError.products){section.hidden=true;rail.innerHTML="";return;}
-  const deals=state.products.filter(p=>p.available!==false&&p.hotDeal&&p.salePrice);
+  const deals=state.products.filter(p=>p.available!==false&&activeSale(p));
   section.hidden=!deals.length;
   if(!deals.length)return;
   rail.innerHTML=deals.map(dealCard).join("");
@@ -122,8 +128,8 @@ function openProduct(id){
   const p=state.products.find(x=>String(x.id)===String(id));
   if(!p)return;
   const imgs=productImages(p);
-  const sale=p.hotDeal&&p.salePrice;
-  const final=sale?p.salePrice:p.price;
+  const sale=activeSale(p);
+  const final=sale||p.price;
 
   const modalImage=document.querySelector("#modalImage");
   if(imgs.length){
@@ -222,6 +228,27 @@ function watch(name){
   });
 }
 
+const menuToggle=document.querySelector("#menuToggle");
+const navMenu=document.querySelector("#navMenu");
+function closeMenu(){
+  if(!menuToggle||!navMenu)return;
+  navMenu.hidden=true;
+  menuToggle.setAttribute("aria-expanded","false");
+  menuToggle.setAttribute("aria-label","Open menu");
+}
+if(menuToggle&&navMenu){
+  menuToggle.onclick=e=>{
+    e.stopPropagation();
+    const opening=navMenu.hidden;
+    navMenu.hidden=!opening;
+    menuToggle.setAttribute("aria-expanded",String(opening));
+    menuToggle.setAttribute("aria-label",opening?"Close menu":"Open menu");
+  };
+  navMenu.addEventListener("click",e=>e.stopPropagation());
+  navMenu.querySelectorAll("a").forEach(a=>a.addEventListener("click",closeMenu));
+  document.addEventListener("click",closeMenu);
+}
+
 const searchBar=document.querySelector("#searchBar");
 const searchInput=document.querySelector("#searchInput");
 document.querySelector("#searchToggle").onclick=()=>{searchBar.hidden=false;setTimeout(()=>searchInput.focus(),0)};
@@ -240,7 +267,7 @@ document.querySelector("#reviewPrev").onclick=()=>{reviewIndex--;renderReview();
 document.querySelector("#reviewNext").onclick=()=>{reviewIndex++;renderReview();restartReviews()};
 document.querySelector("#modalClose").onclick=closeModal;
 document.querySelector("#modalBackdrop").onclick=closeModal;
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeMenu()}});
 
 render();
 watch("products");
