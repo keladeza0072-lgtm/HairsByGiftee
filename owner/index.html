@@ -271,7 +271,6 @@ function setBusy(form,busy,label="Saving…"){
   else{btn.textContent=btn.dataset.old||btn.textContent;btn.disabled=false}
 }
 function home(){
-  const current=state.announcements.find(x=>x.active);
   return `<h1 class="admin-title">Welcome back</h1><p class="muted">Everything here updates the live website.</p>
   <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
   <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.products.filter(x=>x.hotDeal).length} hot deals • ${state.reviews.filter(x=>x.published!==false).length} reviews</p></div>
@@ -283,7 +282,7 @@ function products(){
   <form id="productForm" class="panel form-grid">
     <label class="field">Product name<input name="name" required value="${esc(edit?.name||"")}"></label>
     <label class="field">Price (₦)<input name="price" type="number" min="0" required value="${edit?.price||""}"></label>
-    <label class="field">Category<select name="category"><option>Bone Straight</option><option>Curly</option><option>Bob Wigs</option><option>Coloured Wigs</option><option>Other</option></select></label>
+    <label class="field">Category<select name="category">${["Bone Straight","Curly","Bob Wigs","Coloured Wigs","Other"].map(c=>`<option ${edit?.category===c?"selected":""}>${c}</option>`).join("")}</select></label>
     <label class="field">Hair details<input name="detail" value="${esc(edit?.detail||"")}" placeholder='22” • 200% • HD Lace'></label>
     <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple><small>Select several photos at once. The first photo is used on the product card. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
     <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Available</label>
@@ -335,7 +334,7 @@ function wireActions(){
     const image=images[0]||old?.image||"";
     const data={name:f.get("name").trim(),price:Number(f.get("price")),category:f.get("category"),detail:f.get("detail").trim(),image,images,available:f.get("available")==="on",bestseller:f.get("bestseller")==="on",updatedAt:new Date()};
     if(editingId)await updateDoc("products",editingId,data);else await createDoc("products",{...data,hotDeal:false,salePrice:null,createdAt:new Date()});
-    editingId=null;await load();
+    editingId=null;await load();alert("Product updated on the live website.");
   }catch(e){alert("Could not save product: "+e.message)}finally{setBusy(pf,false)}};
 
   document.querySelectorAll("[data-edit-product]").forEach(b=>b.onclick=()=>{editingId=b.dataset.editProduct;render();window.scrollTo({top:0,behavior:"smooth"})});
@@ -343,14 +342,14 @@ function wireActions(){
   document.querySelectorAll("[data-delete-product]").forEach(b=>b.onclick=async()=>{if(confirm("Delete this product from the website?")){await deleteDoc("products",b.dataset.deleteProduct);await load()}});
 
   const df=document.querySelector("#dealForm");
-  if(df)df.onsubmit=async e=>{e.preventDefault();const f=new FormData(df);await updateDoc("products",f.get("product"),{hotDeal:true,salePrice:Number(f.get("salePrice")),updatedAt:new Date()});await load()};
+  if(df)df.onsubmit=async e=>{e.preventDefault();const f=new FormData(df);await updateDoc("products",f.get("product"),{hotDeal:true,salePrice:Number(f.get("salePrice")),updatedAt:new Date()});await load();alert("Hot Deal is now live on the website.")};
   document.querySelectorAll("[data-remove-deal]").forEach(b=>b.onclick=async()=>{await updateDoc("products",b.dataset.removeDeal,{hotDeal:false,salePrice:null,updatedAt:new Date()});await load()});
 
   const rf=document.querySelector("#reviewForm");
   if(rf)rf.onsubmit=async e=>{e.preventDefault();setBusy(rf,true);try{
     const f=new FormData(rf),file=rf.elements.imageFile.files[0],image=file?await upload(file,"reviews"):"";
     await createDoc("reviews",{name:f.get("name").trim(),rating:Number(f.get("rating")),quote:f.get("quote").trim(),image,published:true,createdAt:new Date()});
-    await load();
+    await load();alert("Review published on the live website.");
   }catch(e){alert("Could not save review: "+e.message)}finally{setBusy(rf,false)}};
   document.querySelectorAll("[data-toggle-review]").forEach(b=>b.onclick=async()=>{const r=state.reviews.find(x=>x.id===b.dataset.toggleReview);await updateDoc("reviews",r.id,{published:r.published===false});await load()});
   document.querySelectorAll("[data-delete-review]").forEach(b=>b.onclick=async()=>{await deleteDoc("reviews",b.dataset.deleteReview);await load()});
