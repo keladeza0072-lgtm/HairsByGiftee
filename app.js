@@ -78,6 +78,32 @@ function renderShop(){
   wireProducts();
 }
 
+function dealCard(p){
+  const final=p.salePrice||p.price;
+  return `<article class="deal-card" data-product-id="${esc(p.id)}" tabindex="0" role="button">
+    <div class="deal-image">
+      <img src="${esc(productImages(p)[0])}" alt="${esc(p.name)}" loading="lazy">
+      <span class="deal-badge">Hot Deal</span>
+    </div>
+    <div class="deal-copy">
+      <h3>${esc(p.name)}</h3>
+      <div class="deal-price"><strong>${money(final)}</strong>${p.salePrice?`<del>${money(p.price)}</del>`:""}</div>
+      <span class="deal-view">View Deal</span>
+    </div>
+  </article>`;
+}
+
+function renderDeals(){
+  const section=document.querySelector(".deals-section");
+  const rail=document.querySelector("#dealRail");
+  if(!section||!rail)return;
+  const deals=state.products.filter(p=>p.available!==false&&p.hotDeal&&p.salePrice);
+  section.hidden=!deals.length;
+  if(!deals.length)return;
+  rail.innerHTML=deals.map(dealCard).join("");
+  wireProducts();
+}
+
 function wireProducts(){
   document.querySelectorAll("[data-product-id]").forEach(card=>{
     const open=()=>openProduct(card.dataset.productId);
@@ -154,6 +180,7 @@ function restartReviews(){
 
 function render(){
   renderShop();
+  renderDeals();
   renderReview();
   restartReviews();
 }
@@ -172,6 +199,14 @@ const searchInput=document.querySelector("#searchInput");
 document.querySelector("#searchToggle").onclick=()=>{searchBar.hidden=false;setTimeout(()=>searchInput.focus(),0)};
 document.querySelector("#searchClose").onclick=()=>{searchBar.hidden=true;searchInput.value="";searchTerm="";activeCategory="All";renderShop()};
 searchInput.oninput=e=>{searchTerm=e.target.value.trim().toLowerCase();activeCategory="All";renderShop();};
+
+const dealsToggle=document.querySelector("#dealsToggle");
+if(dealsToggle)dealsToggle.onclick=()=>{
+  const rail=document.querySelector("#dealRail");
+  const expanded=rail.classList.toggle("expanded");
+  dealsToggle.textContent=expanded?"Show less":"View all deals";
+  dealsToggle.setAttribute("aria-expanded",String(expanded));
+};
 
 document.querySelector("#reviewPrev").onclick=()=>{reviewIndex--;renderReview();restartReviews()};
 document.querySelector("#reviewNext").onclick=()=>{reviewIndex++;renderReview();restartReviews()};
