@@ -3,9 +3,9 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14
 
 const WA="2347087861972";
 
-const state={products:[],reviews:[]};
-const loading={products:true,reviews:true};
-const loadError={products:false,reviews:false};
+const state={products:[],hotDeals:[],reviews:[],announcements:[]};
+const loading={products:true,hotDeals:true,reviews:true,announcements:true};
+const loadError={products:false,hotDeals:false,reviews:false,announcements:false};
 let activeCategory="All";
 let searchTerm="";
 let reviewIndex=0;
@@ -24,11 +24,6 @@ const productImageMarkup=p=>{
     ? `<img src="${esc(src)}" alt="${esc(p.name||"Wig")}" loading="lazy">`
     : '<div class="product-image-placeholder" aria-hidden="true"></div>';
 };
-const activeSale=p=>{
-  const regular=Number(p.price||0);
-  const sale=Number(p.salePrice||0);
-  return p.hotDeal&&regular>0&&sale>0&&sale<regular?sale:0;
-};
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
   "Hi HairsByGiftee ❤️\nI'm interested in the "+p.name+".\n"+(p.detail||"")+"\nPrice: ₦"+Number(price).toLocaleString("en-NG")+"\n\nIs it currently available?"
 );
@@ -42,11 +37,8 @@ function visibleProducts(){
 }
 
 function productCard(p){
-  const sale=activeSale(p);
-  const final=p.price;
   const badges=[
-    p.bestseller?'<span class="badge badge-best">Bestseller</span>':"",
-    sale?'<span class="badge badge-sale">Hot Deal</span>':""
+    p.bestseller?'<span class="badge badge-best">Bestseller</span>':""
   ].join("");
   return `<article class="product" data-product-id="${esc(p.id)}" tabindex="0" role="button">
     <div class="product-image">
@@ -56,7 +48,7 @@ function productCard(p){
     <div class="product-copy">
       <h3>${esc(p.name)}</h3>
       <div class="product-meta">${esc(p.detail||"")}</div>
-      <div class="price"><strong>${money(final)}</strong>${sale?`<del>${money(p.price)}</del>`:""}</div>
+      <div class="price"><strong>${money(p.price)}</strong></div>
       <span class="view-details">View Details</span>
     </div>
   </article>`;
@@ -88,17 +80,16 @@ function renderShop(){
   wireProducts();
 }
 
-function dealCard(p){
-  const sale=activeSale(p);
-  const final=sale||p.price;
-  return `<article class="deal-card" data-product-id="${esc(p.id)}" tabindex="0" role="button">
+function dealCard(d){
+  return `<article class="deal-card" data-deal-id="${esc(d.id)}" tabindex="0" role="button">
     <div class="deal-image">
-      ${productImageMarkup(p)}
+      ${productImageMarkup(d)}
       <span class="deal-badge">Hot Deal</span>
     </div>
     <div class="deal-copy">
-      <h3>${esc(p.name)}</h3>
-      <div class="deal-price"><strong>${money(final)}</strong>${p.salePrice?`<del>${money(p.price)}</del>`:""}</div>
+      <h3>${esc(d.name)}</h3>
+      <p class="deal-description">${esc(d.detail||"")}</p>
+      <div class="deal-price"><strong>${money(d.price)}</strong></div>
       <span class="deal-view">View Deal</span>
     </div>
   </article>`;
@@ -108,12 +99,54 @@ function renderDeals(){
   const section=document.querySelector(".deals-section");
   const rail=document.querySelector("#dealRail");
   if(!section||!rail)return;
-  if(loading.products||loadError.products){section.hidden=true;rail.innerHTML="";return;}
-  const deals=state.products.filter(p=>p.available!==false&&activeSale(p));
+  if(loading.hotDeals||loadError.hotDeals){section.hidden=true;rail.innerHTML="";return;}
+  const deals=state.hotDeals.filter(d=>d.available!==false);
   section.hidden=!deals.length;
-  if(!deals.length)return;
+  if(!deals.length){rail.innerHTML="";return;}
   rail.innerHTML=deals.map(dealCard).join("");
-  wireProducts();
+  wireDeals();
+}
+
+function wireDeals(){
+  document.querySelectorAll("[data-deal-id]").forEach(card=>{
+    const open=()=>openDeal(card.dataset.dealId);
+    card.onclick=open;
+    card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}};
+  });
+}
+
+function setModalImages(item){
+  const imgs=productImages(item);
+  const modalImage=document.querySelector("#modalImage");
+  if(imgs.length){
+    modalImage.src=imgs[0];
+    modalImage.alt=item.name||"";
+    modalImage.hidden=false;
+  }else{
+    modalImage.removeAttribute("src");
+    modalImage.alt="";
+    modalImage.hidden=true;
+  }
+  document.querySelector("#modalThumbs").innerHTML=imgs.length>1?imgs.map((src,i)=>`<button type="button" class="${i===0?"active":""}" data-thumb="${i}"><img src="${esc(src)}" alt=""></button>`).join(""):"";
+  document.querySelectorAll("[data-thumb]").forEach(btn=>btn.onclick=()=>{
+    modalImage.src=imgs[Number(btn.dataset.thumb)];
+    document.querySelectorAll("[data-thumb]").forEach(x=>x.classList.toggle("active",x===btn));
+  });
+}
+
+function openDeal(id){
+  const d=state.hotDeals.find(x=>String(x.id)===String(id));
+  if(!d)return;
+  setModalImages(d);
+  document.querySelector("#modalTitle").textContent=d.name||"Hot Deal";
+  document.querySelector("#modalCategory").textContent="HOT DEAL";
+  document.querySelector("#modalDetail").textContent=d.detail||"";
+  document.querySelector("#modalPrice").innerHTML=`<strong>${money(d.price)}</strong>`;
+  document.querySelector("#modalStock").textContent=d.available===false?"Offer unavailable":"Offer available";
+  document.querySelector("#modalBuy").textContent="Claim deal on WhatsApp";
+  document.querySelector("#modalBuy").href=whatsapp(d,d.price);
+  document.querySelector("#productModal").hidden=false;
+  document.body.classList.add("modal-open");
 }
 
 function wireProducts(){
@@ -127,33 +160,14 @@ function wireProducts(){
 function openProduct(id){
   const p=state.products.find(x=>String(x.id)===String(id));
   if(!p)return;
-  const imgs=productImages(p);
-  const sale=activeSale(p);
-  const final=sale||p.price;
-
-  const modalImage=document.querySelector("#modalImage");
-  if(imgs.length){
-    modalImage.src=imgs[0];
-    modalImage.alt=p.name;
-    modalImage.hidden=false;
-  }else{
-    modalImage.removeAttribute("src");
-    modalImage.alt="";
-    modalImage.hidden=true;
-  }
+  setModalImages(p);
   document.querySelector("#modalTitle").textContent=p.name;
   document.querySelector("#modalCategory").textContent=p.category||"";
   document.querySelector("#modalDetail").textContent=p.detail||"";
-  document.querySelector("#modalPrice").innerHTML=`<strong>${money(final)}</strong>${sale?`<del>${money(p.price)}</del>`:""}`;
+  document.querySelector("#modalPrice").innerHTML=`<strong>${money(p.price)}</strong>`;
   document.querySelector("#modalStock").textContent=p.available===false?"Sold out":"Available";
-  document.querySelector("#modalBuy").href=whatsapp(p,final);
-
-  document.querySelector("#modalThumbs").innerHTML=imgs.length>1?imgs.map((src,i)=>`<button type="button" class="${i===0?"active":""}" data-thumb="${i}"><img src="${esc(src)}" alt=""></button>`).join(""):"";
-  document.querySelectorAll("[data-thumb]").forEach(btn=>btn.onclick=()=>{
-    document.querySelector("#modalImage").src=imgs[Number(btn.dataset.thumb)];
-    document.querySelectorAll("[data-thumb]").forEach(x=>x.classList.toggle("active",x===btn));
-  });
-
+  document.querySelector("#modalBuy").textContent="Buy on WhatsApp";
+  document.querySelector("#modalBuy").href=whatsapp(p,p.price);
   document.querySelector("#productModal").hidden=false;
   document.body.classList.add("modal-open");
 }
@@ -208,7 +222,19 @@ function restartReviews(){
   if(reviews.length>1)reviewTimer=setInterval(()=>{reviewIndex++;renderReview()},5000);
 }
 
+function renderAnnouncement(){
+  const bar=document.querySelector("#announcementBar");
+  const text=document.querySelector("#announcementText");
+  if(!bar||!text)return;
+  if(loading.announcements||loadError.announcements){bar.hidden=true;return;}
+  const announcement=state.announcements.find(a=>a.active!==false&&String(a.message||"").trim());
+  if(!announcement){bar.hidden=true;text.textContent="";return;}
+  text.textContent=announcement.message;
+  bar.hidden=false;
+}
+
 function render(){
+  renderAnnouncement();
   renderShop();
   renderDeals();
   renderReview();
@@ -271,4 +297,6 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeM
 
 render();
 watch("products");
+watch("hotDeals");
 watch("reviews");
+watch("announcements");

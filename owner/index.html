@@ -43,7 +43,7 @@
       <button data-tab="home" class="active">Home</button>
       <button data-tab="products">Products</button>
       <button data-tab="deals">Hot Deals</button>
-      
+      <button data-tab="announcements">Announcement</button>
       <button data-tab="reviews">Reviews</button>
       <a href="../" target="_blank">View Website ↗</a>
       <button id="logoutBtn">Log out</button>
@@ -169,8 +169,8 @@ const API_KEY="AIzaSyDpRFnf0iE_C-ft0-H1Fm79OXUmsIv1HUk";
 const FIRESTORE_BASE="https://firestore.googleapis.com/v1/projects/"+PROJECT+"/databases/(default)/documents";
 const STORAGE_BASE="https://firebasestorage.googleapis.com/v0/b/"+BUCKET+"/o";
 
-const state={products:[],reviews:[]};
-let tab="home",editingId=null;
+const state={products:[],hotDeals:[],reviews:[],announcements:[]};
+let tab="home",editingId=null,editingDealId=null,editingAnnouncementId=null;
 
 const token=()=>sessionStorage.getItem("hbg_id_token")||"";
 const esc=(s="")=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
@@ -284,10 +284,16 @@ async function uploadMany(files,folder){
   return out;
 }
 async function load(){
-  const [products,reviews]=await Promise.all([
-    listCollection("products"),listCollection("reviews")
+  const [products,hotDeals,reviews,announcements]=await Promise.all([
+    listCollection("products"),
+    listCollection("hotDeals"),
+    listCollection("reviews"),
+    listCollection("announcements")
   ]);
-  state.products=products;state.reviews=reviews;
+  state.products=products;
+  state.hotDeals=hotDeals;
+  state.reviews=reviews;
+  state.announcements=announcements;
   render();
 }
 function setBusy(form,busy,label="Saving…"){
@@ -297,11 +303,13 @@ function setBusy(form,busy,label="Saving…"){
   else{btn.textContent=btn.dataset.old||btn.textContent;btn.disabled=false}
 }
 function home(){
+  const activeAnnouncement=state.announcements.find(x=>x.active!==false);
   return `<h1 class="admin-title">Welcome back</h1><p class="muted">Everything here updates the live website.</p>
-  <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
-  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.products.filter(x=>x.hotDeal).length} hot deals • ${state.reviews.filter(x=>x.published!==false).length} reviews</p></div>
+  <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="announcements">✦<b>Announcement</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
+  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.hotDeals.filter(x=>x.available!==false).length} live hot deals • ${state.reviews.filter(x=>x.published!==false).length} reviews</p><p class="muted">Announcement: ${esc(activeAnnouncement?.message||"None live")}</p></div>
   ${state.products.length===0?'<div class="panel"><b>No products yet</b><p class="muted">Use Add Product to publish your first real wig and photos.</p></div>':""}`;
 }
+
 function products(){
   const edit=state.products.find(x=>x.id===editingId);
   return `<h1 class="admin-title">Products</h1><p class="muted">The regular price entered here is the price shown normally in Shop Wigs. Discount prices are managed separately under Hot Deals.</p>
@@ -318,22 +326,42 @@ function products(){
   <div class="panel admin-list">${state.products.map(p=>`<div class="row product-row"><div class="row-product">${p.image?`<img src="${esc(p.image)}" alt="">`:""}<div><b>${esc(p.name)}</b><br><small>${esc(p.detail||"")} • Regular ${naira(p.price)}${p.hotDeal&&p.salePrice?` • Deal ${naira(p.salePrice)}`:""}</small></div></div><span>${p.available===false?"Sold out":"Available"}</span><div class="row-actions"><button class="mini" data-edit-product="${p.id}">Edit</button><button class="mini" data-toggle-product="${p.id}">${p.available===false?"Make available":"Mark sold out"}</button><button class="mini danger" data-delete-product="${p.id}">Delete</button></div></div>`).join("")||"<p>No products yet.</p>"}</div>`;
 }
 function deals(){
-  return `<h1 class="admin-title">Hot Deals</h1><p class="muted">Choose an existing product and set its sale price.</p>
-  <form id="dealForm" class="panel form-grid"><label class="field">Product<select name="product">${state.products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select></label><label class="field">Sale price (₦)<input name="salePrice" type="number" min="0" required></label><div class="field full"><button class="btn primary" type="submit">Publish Deal</button></div></form>
-  <div class="panel admin-list">${state.products.filter(p=>p.hotDeal).map(p=>`<div class="row"><div><b>${esc(p.name)}</b><br><small>${naira(p.price)} → ${naira(p.salePrice)}</small></div><span>Live deal</span><button class="mini danger" data-remove-deal="${p.id}">Remove</button></div>`).join("")||"<p>No hot deals yet.</p>"}</div>`;
+  const edit=state.hotDeals.find(x=>x.id===editingDealId);
+  return `<h1 class="admin-title">Hot Deals</h1><p class="muted">Create standalone offers. Upload one photo or several photos, including a single photo showing multiple wigs.</p>
+  <form id="dealForm" class="panel form-grid">
+    <label class="field">Deal title<input name="name" required value="${esc(edit?.name||"")}" placeholder="e.g. Weekend Wig Bundle"></label>
+    <label class="field">Offer price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}"></label>
+    <label class="field full">Offer description<textarea name="detail" maxlength="700" required placeholder="Describe the wigs included, lengths, offer details, or anything the customer should know.">${esc(edit?.detail||"")}</textarea></label>
+    <label class="field full">Deal photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select one or several photos. The first image is the cover photo. Leave blank while editing to keep the current photos.</small></label>
+    <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Show this deal on the website</label>
+    <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Deal":"Publish Deal"}</button>${edit?'<button class="mini" id="cancelDealEdit" type="button">Cancel</button>':""}</div>
+  </form>
+  <div class="panel admin-list">${state.hotDeals.map(d=>`<div class="row product-row"><div class="row-product">${d.image?`<img src="${esc(d.image)}" alt="">`:""}<div><b>${esc(d.name)}</b><br><small>${naira(d.price)} • ${esc(d.detail||"")}</small></div></div><span>${d.available===false?"Hidden":"Live"}</span><div class="row-actions"><button class="mini" data-edit-deal="${d.id}">Edit</button><button class="mini" data-toggle-deal="${d.id}">${d.available===false?"Show":"Hide"}</button><button class="mini danger" data-delete-deal="${d.id}">Delete</button></div></div>`).join("")||"<p>No hot deals yet.</p>"}</div>`;
 }
+
+function announcements(){
+  const edit=state.announcements.find(x=>x.id===editingAnnouncementId);
+  return `<h1 class="admin-title">Announcement</h1><p class="muted">Show one short message in the announcement bar above the website header.</p>
+  <form id="announcementForm" class="panel form-grid">
+    <label class="field full">Announcement message<textarea name="message" maxlength="160" required placeholder="e.g. Free delivery this weekend only.">${esc(edit?.message||"")}</textarea><small>Keep it short and easy to read on mobile.</small></label>
+    <label class="check"><input name="active" type="checkbox" ${edit?.active===false?"":"checked"}> Show on website</label>
+    <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Announcement":"Publish Announcement"}</button>${edit?'<button class="mini" id="cancelAnnouncementEdit" type="button">Cancel</button>':""}</div>
+  </form>
+  <div class="panel admin-list">${state.announcements.map(a=>`<div class="row"><div><b>${esc(a.message)}</b><br><small>${a.active===false?"Hidden":"Showing now"}</small></div><div class="row-actions"><button class="mini" data-edit-announcement="${a.id}">Edit</button><button class="mini" data-toggle-announcement="${a.id}">${a.active===false?"Show":"Hide"}</button><button class="mini danger" data-delete-announcement="${a.id}">Delete</button></div></div>`).join("")||"<p>No announcements yet.</p>"}</div>`;
+}
+
 function reviews(){
   return `<h1 class="admin-title">Reviews</h1><p class="muted">Publish customer feedback and photos.</p>
   <form id="reviewForm" class="panel form-grid"><label class="field">Customer name<input name="name" required></label><label class="field">Rating<select name="rating"><option>5</option><option>4</option><option>3</option></select></label><label class="field full">Customer photo<input name="imageFile" type="file" accept="image/*"></label><label class="field full">What did they say?<textarea name="quote" required></textarea></label><div class="field full"><button class="btn primary" type="submit">Publish Review</button></div></form>
   <div class="panel admin-list">${state.reviews.map(r=>`<div class="row"><div><b>${esc(r.name)} • ${"★".repeat(r.rating||5)}</b><br><small>“${esc(r.quote)}”</small></div><button class="mini" data-toggle-review="${r.id}">${r.published===false?"Show":"Hide"}</button><button class="mini danger" data-delete-review="${r.id}">Delete</button></div>`).join("")||"<p>No reviews yet.</p>"}</div>`;
 }
 function render(){
-  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():reviews();
+  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():tab==="announcements"?announcements():reviews();
   screen().querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>switchTab(b.dataset.go));
   wireActions();
 }
 function switchTab(next){
-  tab=next;editingId=null;
+  tab=next;editingId=null;editingDealId=null;editingAnnouncementId=null;
   document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab===tab));
   render();
 }
@@ -348,7 +376,7 @@ function wireActions(){
     const images=uploadedImages.length?[...existingImages,...uploadedImages]:existingImages;
     const image=images[0]||old?.image||"";
     const data={name:f.get("name").trim(),price:Number(f.get("price")),category:f.get("category"),detail:f.get("detail").trim(),image,images,available:f.get("available")==="on",bestseller:f.get("bestseller")==="on",updatedAt:new Date()};
-    if(editingId)await updateDoc("products",editingId,data);else await createDoc("products",{...data,hotDeal:false,salePrice:null,createdAt:new Date()});
+    if(editingId)await updateDoc("products",editingId,data);else await createDoc("products",{...data,createdAt:new Date()});
     editingId=null;await load();alert("Product updated on the live website.");
   }catch(e){alert("Could not save product: "+e.message)}finally{setBusy(pf,false)}};
 
@@ -356,19 +384,53 @@ function wireActions(){
   document.querySelectorAll("[data-toggle-product]").forEach(b=>b.onclick=async()=>{const p=state.products.find(x=>x.id===b.dataset.toggleProduct);await updateDoc("products",p.id,{available:p.available===false,updatedAt:new Date()});await load()});
   document.querySelectorAll("[data-delete-product]").forEach(b=>b.onclick=async()=>{if(confirm("Delete this product from the website?")){await deleteDoc("products",b.dataset.deleteProduct);await load()}});
 
+  const cancelDeal=document.querySelector("#cancelDealEdit");
+  if(cancelDeal)cancelDeal.onclick=()=>{editingDealId=null;render()};
+
   const df=document.querySelector("#dealForm");
-  if(df)df.onsubmit=async e=>{
-    e.preventDefault();
-    const f=new FormData(df);
-    const product=state.products.find(x=>x.id===f.get("product"));
-    const salePrice=Number(f.get("salePrice"));
-    if(!product||!Number(product.price)){alert("Set a valid regular product price first.");return}
-    if(!salePrice||salePrice>=Number(product.price)){alert("Deal price must be lower than the regular price.");return}
-    await updateDoc("products",product.id,{hotDeal:true,salePrice,updatedAt:new Date()});
+  if(df)df.onsubmit=async e=>{e.preventDefault();setBusy(df,true);try{
+    const f=new FormData(df),old=state.hotDeals.find(x=>x.id===editingDealId),files=[...df.elements.imageFile.files];
+    const existingImages=Array.isArray(old?.images)?old.images.filter(Boolean):(old?.image?[old.image]:[]);
+    const uploadedImages=files.length?await uploadMany(files,"hot-deals"):[];
+    const images=uploadedImages.length?[...existingImages,...uploadedImages]:existingImages;
+    if(!images.length)throw new Error("Add at least one deal photo.");
+    const data={name:f.get("name").trim(),price:Number(f.get("price")),detail:f.get("detail").trim(),image:images[0],images,available:f.get("available")==="on",updatedAt:new Date()};
+    if(editingDealId)await updateDoc("hotDeals",editingDealId,data);else await createDoc("hotDeals",{...data,createdAt:new Date()});
+    editingDealId=null;await load();alert("Hot Deal published on the live website.");
+  }catch(e){alert("Could not save Hot Deal: "+e.message)}finally{setBusy(df,false)}};
+  document.querySelectorAll("[data-edit-deal]").forEach(b=>b.onclick=()=>{editingDealId=b.dataset.editDeal;render();window.scrollTo({top:0,behavior:"smooth"})});
+  document.querySelectorAll("[data-toggle-deal]").forEach(b=>b.onclick=async()=>{const d=state.hotDeals.find(x=>x.id===b.dataset.toggleDeal);await updateDoc("hotDeals",d.id,{available:d.available===false,updatedAt:new Date()});await load()});
+  document.querySelectorAll("[data-delete-deal]").forEach(b=>b.onclick=async()=>{if(confirm("Delete this Hot Deal from the website?")){await deleteDoc("hotDeals",b.dataset.deleteDeal);await load()}});
+
+  const cancelAnnouncement=document.querySelector("#cancelAnnouncementEdit");
+  if(cancelAnnouncement)cancelAnnouncement.onclick=()=>{editingAnnouncementId=null;render()};
+
+  const af=document.querySelector("#announcementForm");
+  if(af)af.onsubmit=async e=>{e.preventDefault();setBusy(af,true);try{
+    const f=new FormData(af),message=String(f.get("message")||"").trim(),active=f.get("active")==="on";
+    if(!message)throw new Error("Enter an announcement message.");
+    if(active){
+      for(const a of state.announcements){
+        if(a.id!==editingAnnouncementId&&a.active!==false)await updateDoc("announcements",a.id,{active:false,updatedAt:new Date()});
+      }
+    }
+    const data={message,active,updatedAt:new Date()};
+    if(editingAnnouncementId)await updateDoc("announcements",editingAnnouncementId,data);else await createDoc("announcements",{...data,createdAt:new Date()});
+    editingAnnouncementId=null;await load();alert(active?"Announcement is live on the website.":"Announcement saved as hidden.");
+  }catch(e){alert("Could not save announcement: "+e.message)}finally{setBusy(af,false)}};
+  document.querySelectorAll("[data-edit-announcement]").forEach(b=>b.onclick=()=>{editingAnnouncementId=b.dataset.editAnnouncement;render();window.scrollTo({top:0,behavior:"smooth"})});
+  document.querySelectorAll("[data-toggle-announcement]").forEach(b=>b.onclick=async()=>{
+    const a=state.announcements.find(x=>x.id===b.dataset.toggleAnnouncement);
+    const makeActive=a.active===false;
+    if(makeActive){
+      for(const other of state.announcements){
+        if(other.id!==a.id&&other.active!==false)await updateDoc("announcements",other.id,{active:false,updatedAt:new Date()});
+      }
+    }
+    await updateDoc("announcements",a.id,{active:makeActive,updatedAt:new Date()});
     await load();
-    alert("Hot Deal is now live on the website.");
-  };
-  document.querySelectorAll("[data-remove-deal]").forEach(b=>b.onclick=async()=>{await updateDoc("products",b.dataset.removeDeal,{hotDeal:false,salePrice:null,updatedAt:new Date()});await load()});
+  });
+  document.querySelectorAll("[data-delete-announcement]").forEach(b=>b.onclick=async()=>{if(confirm("Delete this announcement?")){await deleteDoc("announcements",b.dataset.deleteAnnouncement);await load()}});
 
   const rf=document.querySelector("#reviewForm");
   if(rf)rf.onsubmit=async e=>{e.preventDefault();setBusy(rf,true);try{

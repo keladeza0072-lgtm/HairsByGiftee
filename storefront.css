@@ -930,3 +930,46 @@
   .brand-wordmark span{font-size:19px}
   .brand-wordmark small{display:none}
 }
+
+/* Announcement bar */
+.announcement-bar{
+  background:var(--brown);
+  color:#fff;
+  min-height:34px;
+}
+.announcement-bar[hidden]{display:none!important}
+.announcement-inner{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  text-align:center;
+}
+.announcement-mark{font-size:10px;color:#efc2b5}
+.announcement-inner p{
+  margin:0;
+  font-size:10px;
+  line-height:1.35;
+  font-weight:600;
+  letter-spacing:.03em;
+}
+@media(max-width:620px){
+  .announcement-bar,.announcement-inner{min-height:32px}
+  .announcement-inner{padding:6px 0}
+  .announcement-inner p{font-size:9px}
+}
+
+/* Independent Hot Deals cards */
+.deal-description{
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.35;
+  margin:0 0 9px;
+  min-height:27px;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.deal-image .product-image-placeholder{height:100%}
