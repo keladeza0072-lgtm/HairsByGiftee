@@ -22,7 +22,7 @@
 
 .hero-banner{display:grid;grid-template-columns:minmax(0,3.15fr) minmax(310px,1fr);min-height:475px;background:#ead8cd;overflow:hidden}
 .hero-image{
-  background-image:url("./assets/hero-clean.webp");
+  background-image:url("./assets/hero-clean.webp?v=20260924-2");
   background-size:cover;
   background-position:center 38%;
   background-repeat:no-repeat;
@@ -79,7 +79,7 @@
 
 .final-cta{display:grid;grid-template-columns:1fr 1fr;min-height:330px;background:#f7f0eb}
 .final-cta-photo{
-  background-image:url("./assets/cta-clean.webp");
+  background-image:url("./assets/cta-clean.webp?v=20260924-2");
   background-size:cover;
   background-position:center 42%;
   background-repeat:no-repeat;
@@ -197,13 +197,13 @@
 
 /* Clean fixed visual shell */
 .hero-image{
-  background-image:url("./assets/hero-clean.webp")!important;
+  background-image:url("./assets/hero-clean.webp?v=20260924-2")!important;
   background-size:cover;
   background-position:center 38%;
   background-repeat:no-repeat;
 }
 .final-cta-photo{
-  background-image:url("./assets/cta-clean.webp")!important;
+  background-image:url("./assets/cta-clean.webp?v=20260924-2")!important;
   background-size:cover;
   background-position:center 42%;
   background-repeat:no-repeat;
