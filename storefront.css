@@ -753,3 +753,60 @@
     height:12px;
   }
 }
+
+/* Clickable social links in footer */
+.footer-socials{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:14px;
+  color:var(--muted);
+}
+.social-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:var(--muted)!important;
+  font-size:10px;
+  line-height:1;
+  transition:color .18s ease, transform .18s ease;
+}
+.social-link:hover,
+.social-link:focus-visible{
+  color:var(--brown)!important;
+  transform:translateY(-1px);
+}
+.social-link:focus-visible{
+  outline:2px solid #dcb7aa;
+  outline-offset:4px;
+  border-radius:4px;
+}
+.social-icon{
+  width:17px;
+  height:17px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  flex:0 0 auto;
+}
+.tiktok-icon{stroke-width:1.9}
+@media(max-width:900px){
+  .footer-socials{
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+}
+@media(max-width:620px){
+  .footer-socials{
+    gap:12px;
+  }
+  .social-link{
+    font-size:9px;
+  }
+  .social-icon{
+    width:16px;
+    height:16px;
+  }
+}
