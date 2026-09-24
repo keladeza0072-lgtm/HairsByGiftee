@@ -225,3 +225,64 @@
   .benefit-item small{font-size:6.5px}
   .final-cta-photo{height:240px;background-position:center 42%}
 }
+
+/* Final polish after live visual QA */
+.storefront .whatsapp-header,
+.storefront .final-cta a{
+  color:#fff !important;
+}
+.wa-svg{
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  flex:0 0 auto;
+}
+.hero-panel p{
+  font-size:9px;
+  letter-spacing:.26em;
+  white-space:nowrap;
+}
+.hero-image{
+  background-image:url("./assets/hero-clean.webp?v=20260924-3")!important;
+  image-rendering:auto;
+}
+.final-cta-photo{
+  background-image:url("./assets/cta-clean.webp?v=20260924-3")!important;
+  image-rendering:auto;
+}
+.product h3{
+  line-height:1.18;
+  min-height:42px;
+}
+.product-meta{
+  line-height:1.35;
+  min-height:30px;
+}
+.price{
+  min-height:24px;
+}
+.review-card p{
+  overflow-wrap:anywhere;
+}
+.review-card img{
+  aspect-ratio:1 / 1;
+}
+@media(max-width:900px){
+  .hero-panel p{white-space:normal;line-height:1.5;max-width:320px}
+}
+@media(max-width:620px){
+  .whatsapp-header .wa-svg{display:block;width:18px;height:18px}
+  .benefit-strip{padding:8px 2px}
+  .benefit-item{min-height:56px}
+  .benefit-icon{font-size:16px}
+  .product h3{min-height:36px}
+  .product-meta{min-height:27px}
+}
+@media(max-width:390px){
+  .whatsapp-header span:last-child{display:none}
+  .whatsapp-header{width:42px;padding:0;justify-content:center}
+}
