@@ -3,20 +3,8 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14
 
 const WA="2347087861972";
 
-const fallbackProducts=[
-  {id:"p1",name:"Bone Straight Wig",price:180000,detail:'22” • 200% • HD Lace',category:"Bone Straight",bestseller:true,available:true,image:"https://images.pexels.com/photos/29824659/pexels-photo-29824659/free-photo-of-smiling-woman-holding-hair-extensions.jpeg?auto=compress&cs=tinysrgb&w=900"},
-  {id:"p2",name:"Body Wave Wig",price:170000,detail:'20” • 180% • HD Lace',category:"Body Wave",available:true,image:"https://images.pexels.com/photos/32782509/pexels-photo-32782509/free-photo-of-stylish-studio-portrait-of-three-black-women.jpeg?auto=compress&cs=tinysrgb&w=900"},
-  {id:"p3",name:"Bob Wig",price:150000,detail:'14” • 180% • HD Lace',category:"Bob",hotDeal:true,salePrice:135000,available:true,image:"https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=900&q=85"},
-  {id:"p4",name:"Curly Wig",price:160000,detail:'20” • 180% • HD Lace',category:"Curly",available:true,image:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=900&q=85"}
-];
-
-const fallbackReviews=[
-  {id:"r1",name:"Tolu",rating:5,quote:"The hair is so soft and the quality is amazing! I love it 💕",published:true,image:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=300&q=80"},
-  {id:"r2",name:"Amara",rating:5,quote:"Beautiful hair and very easy to wear.",published:true,image:""},
-  {id:"r3",name:"Chinaza",rating:5,quote:"The quality is top tier. I will definitely order again.",published:true,image:""}
-];
-
-const state={products:fallbackProducts,reviews:fallbackReviews};
+const state={products:[],reviews:[]};
+const loading={products:true,reviews:true};
 let activeCategory="All";
 let searchTerm="";
 let reviewIndex=0;
@@ -27,7 +15,7 @@ const esc=(v="")=>String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"
 const productImages=p=>{
   const imgs=Array.isArray(p.images)?p.images.filter(Boolean):[];
   if(p.image&&!imgs.includes(p.image))imgs.unshift(p.image);
-  return imgs.length?imgs:[fallbackProducts[0].image];
+  return imgs;
 };
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
   "Hi HairsByGiftee ❤️\nI'm interested in the "+p.name+".\n"+(p.detail||"")+"\nPrice: ₦"+Number(price).toLocaleString("en-NG")+"\n\nIs it currently available?"
@@ -72,6 +60,11 @@ function renderFilters(){
 }
 
 function renderShop(){
+  if(loading.products){
+    document.querySelector("#categoryFilters").innerHTML="";
+    document.querySelector("#shopGrid").innerHTML='<div class="empty">Loading wigs…</div>';
+    return;
+  }
   const products=visibleProducts();
   document.querySelector("#shopGrid").innerHTML=products.length?products.map(productCard).join(""):'<div class="empty">No wigs found.</div>';
   renderFilters();
@@ -97,6 +90,7 @@ function renderDeals(){
   const section=document.querySelector(".deals-section");
   const rail=document.querySelector("#dealRail");
   if(!section||!rail)return;
+  if(loading.products){section.hidden=true;rail.innerHTML="";return;}
   const deals=state.products.filter(p=>p.available!==false&&p.hotDeal&&p.salePrice);
   section.hidden=!deals.length;
   if(!deals.length)return;
@@ -156,6 +150,11 @@ function reviewCard(r){
 }
 
 function renderReview(){
+  if(loading.reviews){
+    document.querySelector("#reviewSlider").innerHTML='<div class="review-card no-photo"><div><p>Loading customer reviews…</p></div></div>';
+    document.querySelector("#reviewDots").innerHTML="";
+    return;
+  }
   const reviews=state.reviews.filter(r=>r.published!==false);
   if(!reviews.length){
     document.querySelector("#reviewSlider").innerHTML='<div class="review-card no-photo"><div><p>Reviews coming soon.</p></div></div>';
@@ -188,6 +187,7 @@ function render(){
 function watch(name){
   onSnapshot(collection(db,name),snap=>{
     state[name]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    loading[name]=false;
     render();
   },()=>render());
 }
