@@ -11,7 +11,36 @@ let searchTerm="";
 let reviewIndex=0;
 let reviewTimer=null;
 
-const money=v=>"₦"+Number(v||0).toLocaleString("en-NG");
+const SUPPORTED_CURRENCIES=["NGN","USD","GBP","GHS"];
+const CURRENCY_LOCALES={NGN:"en-NG",USD:"en-US",GBP:"en-GB",GHS:"en-GH"};
+const FX_CACHE_KEY="hbg_fx_rates_v1";
+const FX_CURRENCY_KEY="hbg_currency";
+const FX_MAX_AGE=24*60*60*1000;
+let selectedCurrency=SUPPORTED_CURRENCIES.includes(localStorage.getItem(FX_CURRENCY_KEY))
+  ?localStorage.getItem(FX_CURRENCY_KEY)
+  :"NGN";
+let fxRates={NGN:1};
+let fxCacheSavedAt=0;
+
+try{
+  const cached=JSON.parse(localStorage.getItem(FX_CACHE_KEY)||"null");
+  if(cached&&cached.rates){
+    fxRates={NGN:1,...cached.rates};
+    fxCacheSavedAt=Number(cached.savedAt||0);
+  }
+}catch{}
+
+const money=v=>{
+  const source=Number(v||0);
+  const rate=selectedCurrency==="NGN"?1:Number(fxRates[selectedCurrency]||0);
+  const currency=rate>0?selectedCurrency:"NGN";
+  const amount=currency==="NGN"?source:source*rate;
+  return new Intl.NumberFormat(CURRENCY_LOCALES[currency]||"en-NG",{
+    style:"currency",
+    currency,
+    maximumFractionDigits:currency==="NGN"?0:2
+  }).format(amount);
+};
 const esc=(v="")=>String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const productImages=p=>{
   const imgs=Array.isArray(p.images)?p.images.filter(Boolean):[];
@@ -27,6 +56,44 @@ const productImageMarkup=p=>{
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
   "Hi HairsByGiftee ❤️\nI'm interested in the "+p.name+".\n"+(p.detail||"")+"\nPrice: ₦"+Number(price).toLocaleString("en-NG")+"\n\nIs it currently available?"
 );
+
+async function loadFxRates(){
+  const currencySelect=document.querySelector("#currencySelect");
+  if(currencySelect)currencySelect.value=selectedCurrency;
+
+  const cacheFresh=fxCacheSavedAt&&Date.now()-fxCacheSavedAt<FX_MAX_AGE;
+  if(cacheFresh){
+    render();
+    return;
+  }
+
+  try{
+    const res=await fetch("https://open.er-api.com/v6/latest/NGN",{cache:"no-store"});
+    const data=await res.json();
+    if(!res.ok||data.result!=="success"||!data.rates)throw new Error("FX_UNAVAILABLE");
+
+    fxRates={
+      NGN:1,
+      USD:Number(data.rates.USD||0),
+      GBP:Number(data.rates.GBP||0),
+      GHS:Number(data.rates.GHS||0)
+    };
+    fxCacheSavedAt=Date.now();
+    localStorage.setItem(FX_CACHE_KEY,JSON.stringify({
+      savedAt:fxCacheSavedAt,
+      updatedAt:data.time_last_update_utc||"",
+      rates:fxRates
+    }));
+  }catch{
+    if(selectedCurrency!=="NGN"&&!Number(fxRates[selectedCurrency]||0)){
+      selectedCurrency="NGN";
+      localStorage.setItem(FX_CURRENCY_KEY,selectedCurrency);
+      if(currencySelect)currencySelect.value="NGN";
+    }
+  }
+
+  render();
+}
 
 function visibleProducts(){
   return state.products.filter(p=>p.available!==false).filter(p=>{
@@ -254,6 +321,17 @@ function watch(name){
   });
 }
 
+const currencySelect=document.querySelector("#currencySelect");
+if(currencySelect){
+  currencySelect.value=selectedCurrency;
+  currencySelect.addEventListener("change",()=>{
+    const next=currencySelect.value;
+    selectedCurrency=SUPPORTED_CURRENCIES.includes(next)?next:"NGN";
+    localStorage.setItem(FX_CURRENCY_KEY,selectedCurrency);
+    render();
+  });
+}
+
 const menuToggle=document.querySelector("#menuToggle");
 const navMenu=document.querySelector("#navMenu");
 function closeMenu(){
@@ -296,6 +374,7 @@ document.querySelector("#modalBackdrop").onclick=closeModal;
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeMenu()}});
 
 render();
+loadFxRates();
 watch("products");
 watch("hotDeals");
 watch("reviews");

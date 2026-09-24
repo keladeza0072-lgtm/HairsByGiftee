@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css?v=owner-safe-20260923" />
-  <link rel="stylesheet" href="./storefront.css?v=store-20260924-13" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260924-14" />
 </head>
 <body class="storefront">
   <div id="announcementBar" class="announcement-bar" role="status" aria-live="polite" hidden>
@@ -33,6 +33,15 @@
       </nav>
 
       <div class="header-actions">
+        <label class="currency-select-wrap" aria-label="Display currency">
+          <select id="currencySelect" class="currency-select">
+            <option value="NGN">NGN ₦</option>
+            <option value="USD">USD $</option>
+            <option value="GBP">GBP £</option>
+            <option value="GHS">GHS GH₵</option>
+          </select>
+        </label>
+
         <button id="searchToggle" class="search-toggle icon-button" type="button" aria-label="Search wigs">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
         </button>
@@ -160,6 +169,10 @@
         <span>@hairsbygiftee</span>
       </a>
     </div>
+    <div class="fx-note">
+      Converted prices are estimates. Orders are confirmed in NGN.
+      <a href="https://www.exchangerate-api.com" target="_blank" rel="noreferrer">Rates by ExchangeRate-API</a>
+    </div>
   </footer>
 
   <div id="productModal" class="product-modal" hidden>
@@ -181,6 +194,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260924-7"></script>
+  <script type="module" src="./app.js?v=store-20260924-8"></script>
 </body>
 </html>
