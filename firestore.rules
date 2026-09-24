@@ -15,10 +15,5 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isOwner();
     }
-
-    match /announcements/{document} {
-      allow read: if true;
-      allow write: if isOwner();
-    }
   }
 }

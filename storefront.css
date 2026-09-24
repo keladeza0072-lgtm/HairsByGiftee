@@ -810,3 +810,17 @@
     height:16px;
   }
 }
+
+/* Launch loading and missing-image states */
+.product-image-placeholder{width:100%;height:100%;background:linear-gradient(135deg,#eee4de,#e3d3ca)}
+.product-skeleton{pointer-events:none}
+.skeleton-block,.skeleton-line{position:relative;overflow:hidden;background:#eee6e1}
+.skeleton-block::after,.skeleton-line::after{
+  content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.62),transparent);
+  animation:hbg-shimmer 1.15s ease-in-out infinite
+}
+.skeleton-line{height:11px;border-radius:8px;margin-top:10px}
+.skeleton-title{width:72%;height:16px}.skeleton-price{width:40%}
+@keyframes hbg-shimmer{100%{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.skeleton-block::after,.skeleton-line::after{animation:none}}

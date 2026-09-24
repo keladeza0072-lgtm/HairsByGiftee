@@ -5,6 +5,7 @@ const WA="2347087861972";
 
 const state={products:[],reviews:[]};
 const loading={products:true,reviews:true};
+const loadError={products:false,reviews:false};
 let activeCategory="All";
 let searchTerm="";
 let reviewIndex=0;
@@ -16,6 +17,12 @@ const productImages=p=>{
   const imgs=Array.isArray(p.images)?p.images.filter(Boolean):[];
   if(p.image&&!imgs.includes(p.image))imgs.unshift(p.image);
   return imgs;
+};
+const productImageMarkup=p=>{
+  const src=productImages(p)[0];
+  return src
+    ? `<img src="${esc(src)}" alt="${esc(p.name||"Wig")}" loading="lazy">`
+    : '<div class="product-image-placeholder" aria-hidden="true"></div>';
 };
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
   "Hi HairsByGiftee ❤️\nI'm interested in the "+p.name+".\n"+(p.detail||"")+"\nPrice: ₦"+Number(price).toLocaleString("en-NG")+"\n\nIs it currently available?"
@@ -38,7 +45,7 @@ function productCard(p){
   ].join("");
   return `<article class="product" data-product-id="${esc(p.id)}" tabindex="0" role="button">
     <div class="product-image">
-      <img src="${esc(productImages(p)[0])}" alt="${esc(p.name)}" loading="lazy">
+      ${productImageMarkup(p)}
       ${badges}
     </div>
     <div class="product-copy">
@@ -62,7 +69,12 @@ function renderFilters(){
 function renderShop(){
   if(loading.products){
     document.querySelector("#categoryFilters").innerHTML="";
-    document.querySelector("#shopGrid").innerHTML='<div class="empty">Loading wigs…</div>';
+    document.querySelector("#shopGrid").innerHTML=Array.from({length:4},()=>'<article class="product product-skeleton" aria-hidden="true"><div class="product-image skeleton-block"></div><div class="product-copy"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-price"></div></div></article>').join("");
+    return;
+  }
+  if(loadError.products){
+    document.querySelector("#categoryFilters").innerHTML="";
+    document.querySelector("#shopGrid").innerHTML='<div class="empty">Unable to load wigs right now. Please refresh.</div>';
     return;
   }
   const products=visibleProducts();
@@ -75,7 +87,7 @@ function dealCard(p){
   const final=p.salePrice||p.price;
   return `<article class="deal-card" data-product-id="${esc(p.id)}" tabindex="0" role="button">
     <div class="deal-image">
-      <img src="${esc(productImages(p)[0])}" alt="${esc(p.name)}" loading="lazy">
+      ${productImageMarkup(p)}
       <span class="deal-badge">Hot Deal</span>
     </div>
     <div class="deal-copy">
@@ -90,7 +102,7 @@ function renderDeals(){
   const section=document.querySelector(".deals-section");
   const rail=document.querySelector("#dealRail");
   if(!section||!rail)return;
-  if(loading.products){section.hidden=true;rail.innerHTML="";return;}
+  if(loading.products||loadError.products){section.hidden=true;rail.innerHTML="";return;}
   const deals=state.products.filter(p=>p.available!==false&&p.hotDeal&&p.salePrice);
   section.hidden=!deals.length;
   if(!deals.length)return;
@@ -113,8 +125,16 @@ function openProduct(id){
   const sale=p.hotDeal&&p.salePrice;
   const final=sale?p.salePrice:p.price;
 
-  document.querySelector("#modalImage").src=imgs[0];
-  document.querySelector("#modalImage").alt=p.name;
+  const modalImage=document.querySelector("#modalImage");
+  if(imgs.length){
+    modalImage.src=imgs[0];
+    modalImage.alt=p.name;
+    modalImage.hidden=false;
+  }else{
+    modalImage.removeAttribute("src");
+    modalImage.alt="";
+    modalImage.hidden=true;
+  }
   document.querySelector("#modalTitle").textContent=p.name;
   document.querySelector("#modalCategory").textContent=p.category||"";
   document.querySelector("#modalDetail").textContent=p.detail||"";
@@ -155,6 +175,11 @@ function renderReview(){
     document.querySelector("#reviewDots").innerHTML="";
     return;
   }
+  if(loadError.reviews){
+    document.querySelector("#reviewSlider").innerHTML='<div class="review-card no-photo"><div><p>Customer reviews are temporarily unavailable.</p></div></div>';
+    document.querySelector("#reviewDots").innerHTML="";
+    return;
+  }
   const reviews=state.reviews.filter(r=>r.published!==false);
   if(!reviews.length){
     document.querySelector("#reviewSlider").innerHTML='<div class="review-card no-photo"><div><p>Reviews coming soon.</p></div></div>';
@@ -188,8 +213,13 @@ function watch(name){
   onSnapshot(collection(db,name),snap=>{
     state[name]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     loading[name]=false;
+    loadError[name]=false;
     render();
-  },()=>render());
+  },()=>{
+    loading[name]=false;
+    loadError[name]=true;
+    render();
+  });
 }
 
 const searchBar=document.querySelector("#searchBar");

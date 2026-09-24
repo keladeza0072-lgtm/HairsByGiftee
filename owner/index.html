@@ -165,6 +165,7 @@
 window.startOwnerDashboard=function(){
 const PROJECT="hairsbygiftee";
 const BUCKET="hairsbygiftee.firebasestorage.app";
+const API_KEY="AIzaSyDpRFnf0iE_C-ft0-H1Fm79OXUmsIv1HUk";
 const FIRESTORE_BASE="https://firestore.googleapis.com/v1/projects/"+PROJECT+"/databases/(default)/documents";
 const STORAGE_BASE="https://firebasestorage.googleapis.com/v0/b/"+BUCKET+"/o";
 
@@ -205,10 +206,31 @@ function docFromFirestore(d){
   Object.entries(d.fields||{}).forEach(([k,v])=>out[k]=valueFrom(v));
   return out;
 }
-async function request(url,opts={},needsAuth=true){
+async function refreshSession(){
+  const refresh=sessionStorage.getItem("hbg_refresh_token")||"";
+  if(!refresh)throw new Error("Your session expired. Please sign in again.");
+  const res=await fetch("https://securetoken.googleapis.com/v1/token?key="+API_KEY,{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:new URLSearchParams({grant_type:"refresh_token",refresh_token:refresh})
+  });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.id_token){
+    sessionStorage.removeItem("hbg_id_token");
+    throw new Error("Your session expired. Please sign in again.");
+  }
+  sessionStorage.setItem("hbg_id_token",data.id_token);
+  if(data.refresh_token)sessionStorage.setItem("hbg_refresh_token",data.refresh_token);
+  return data.id_token;
+}
+async function request(url,opts={},needsAuth=true,retried=false){
   const headers=new Headers(opts.headers||{});
   if(needsAuth) headers.set("Authorization","Bearer "+token());
   const res=await fetch(url,{...opts,headers});
+  if(needsAuth&&res.status===401&&!retried){
+    await refreshSession();
+    return request(url,opts,needsAuth,true);
+  }
   let data={};
   if(res.status!==204){try{data=await res.json()}catch{}}
   if(!res.ok){
@@ -239,7 +261,7 @@ async function updateDoc(name,id,data){
 async function deleteDoc(name,id){
   return request(FIRESTORE_BASE+"/"+name+"/"+encodeURIComponent(id),{method:"DELETE"});
 }
-async function upload(file,folder){
+async function upload(file,folder,retried=false){
   if(!file)return "";
   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"-");
   const objectName=folder+"/"+Date.now()+"-"+safe;
@@ -248,6 +270,10 @@ async function upload(file,folder){
     headers:{"Authorization":"Bearer "+token(),"Content-Type":file.type||"application/octet-stream"},
     body:file
   });
+  if(res.status===401&&!retried){
+    await refreshSession();
+    return upload(file,folder,true);
+  }
   const data=await res.json().catch(()=>({}));
   if(!res.ok)throw new Error(data?.error?.message||"Upload failed");
   return STORAGE_BASE+"/"+encodeURIComponent(objectName)+"?alt=media";
@@ -274,17 +300,17 @@ function home(){
   return `<h1 class="admin-title">Welcome back</h1><p class="muted">Everything here updates the live website.</p>
   <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
   <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.products.filter(x=>x.hotDeal).length} hot deals • ${state.reviews.filter(x=>x.published!==false).length} reviews</p></div>
-  ${state.products.length===0?'<div class="panel"><b>Starting fresh?</b><p class="muted">Load the starter catalogue once, then replace it with the real stock.</p><button id="seedBtn" class="btn primary">Load starter catalogue</button></div>':""}`;
+  ${state.products.length===0?'<div class="panel"><b>No products yet</b><p class="muted">Use Add Product to publish your first real wig and photos.</p></div>':""}`;
 }
 function products(){
   const edit=state.products.find(x=>x.id===editingId);
   return `<h1 class="admin-title">Products</h1><p class="muted">Add a wig, upload a photo, or edit what is live.</p>
   <form id="productForm" class="panel form-grid">
     <label class="field">Product name<input name="name" required value="${esc(edit?.name||"")}"></label>
-    <label class="field">Price (₦)<input name="price" type="number" min="0" required value="${edit?.price||""}"></label>
+    <label class="field">Price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}"></label>
     <label class="field">Category<select name="category">${["Bone Straight","Curly","Bob Wigs","Coloured Wigs","Other"].map(c=>`<option ${edit?.category===c?"selected":""}>${c}</option>`).join("")}</select></label>
     <label class="field">Hair details<input name="detail" value="${esc(edit?.detail||"")}" placeholder='22” • 200% • HD Lace'></label>
-    <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple><small>Select several photos at once. The first photo is used on the product card. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
+    <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select several photos at once. The first photo is used on the product card. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
     <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Available</label>
     <label class="check"><input name="bestseller" type="checkbox" ${edit?.bestseller?"checked":""}> Bestseller</label>
     <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Changes":"Publish Product"}</button>${edit?'<button class="mini" id="cancelEdit" type="button">Cancel</button>':""}</div>
@@ -312,17 +338,6 @@ function switchTab(next){
   render();
 }
 function wireActions(){
-  const seed=document.querySelector("#seedBtn");
-  if(seed)seed.onclick=async()=>{seed.disabled=true;try{
-    const starter=[
-      {name:"Luxe Bone Straight",price:165000,salePrice:130000,detail:'22” • 200% • HD Lace',category:"Bone Straight",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=85"},
-      {name:"Dreamy Curls",price:182000,salePrice:149000,detail:'20” • 180% • HD Lace',category:"Curly",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=900&q=85"},
-      {name:"Classic Bob",price:145000,salePrice:119000,detail:'14” • 180% • HD Lace',category:"Bob Wigs",hotDeal:true,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=85"},
-      {name:"Piano Highlight",price:205000,detail:'22” • 200% • HD Lace',category:"Coloured Wigs",hotDeal:false,bestseller:true,available:true,image:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=900&q=85"}
-    ];
-    for(const p of starter)await createDoc("products",{...p,createdAt:new Date()});
-    await load();
-  }catch(e){alert(e.message);seed.disabled=false}};
   const cancel=document.querySelector("#cancelEdit");if(cancel)cancel.onclick=()=>{editingId=null;render()};
 
   const pf=document.querySelector("#productForm");
