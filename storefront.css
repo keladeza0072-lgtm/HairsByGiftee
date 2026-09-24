@@ -111,7 +111,7 @@
 #modalPrice{display:flex;gap:10px;align-items:center;margin:14px 0}
 #modalPrice strong{font-size:24px}
 #modalStock{font-size:12px;font-weight:700}
-.modal-buy{width:100%;min-height:48px;background:var(--brown);color:#fff;display:flex;align-items:center;justify-content:center;border-radius:24px;font-weight:700;margin-top:10px}
+.storefront .modal-buy,.storefront .modal-buy:visited,.storefront .modal-buy:hover,.storefront .modal-buy:focus{width:100%;min-height:48px;background:var(--brown);color:#fff;display:flex;align-items:center;justify-content:center;border-radius:24px;font-weight:700;margin-top:10px}
 .modal-open{overflow:hidden}
 
 @media(max-width:900px){
