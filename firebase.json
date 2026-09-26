@@ -7,7 +7,9 @@
       ".git/**",
       ".github/**",
       "README.md",
-      "node_modules/**"
+      "node_modules/**",
+      "functions/**",
+      ".gitignore"
     ],
     "cleanUrls": true,
     "trailingSlash": false,
@@ -46,5 +48,8 @@
   },
   "storage": {
     "rules": "storage.rules"
+  },
+  "functions": {
+    "source": "functions"
   }
 }

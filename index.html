@@ -12,7 +12,7 @@
   <link rel="preload" as="image" href="./assets/hero-mobile.webp?v=20260924-7" media="(max-width: 900px)" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./storefront.css?v=store-20260924-16" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260926-1" />
 </head>
 <body class="storefront">
   <div id="announcementBar" class="announcement-bar" role="status" aria-live="polite" hidden>
@@ -191,11 +191,58 @@
         <p id="modalDetail"></p>
         <div id="modalPrice"></div>
         <p id="modalStock"></p>
-        <a id="modalBuy" class="modal-buy" target="_blank" rel="noreferrer">Buy on WhatsApp</a>
+        <button id="modalBuy" class="modal-buy" type="button">Buy Now</button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260924-9"></script>
+  <div id="checkoutModal" class="checkout-modal" hidden>
+    <button id="checkoutBackdrop" class="modal-backdrop" type="button" aria-label="Close checkout"></button>
+    <div class="checkout-card" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <button id="checkoutClose" class="modal-close" type="button" aria-label="Close">×</button>
+      <div class="checkout-summary">
+        <p class="checkout-kicker">YOUR ORDER</p>
+        <div class="checkout-item">
+          <img id="checkoutImage" src="" alt="">
+          <div>
+            <h2 id="checkoutTitle"></h2>
+            <p id="checkoutDetail"></p>
+            <strong id="checkoutItemPrice"></strong>
+          </div>
+        </div>
+        <div class="checkout-totals">
+          <div><span>Item</span><strong id="checkoutSubtotal"></strong></div>
+          <div><span>Delivery</span><strong id="checkoutDelivery">Confirmed before payment</strong></div>
+          <div class="checkout-total"><span>Total</span><strong id="checkoutTotal"></strong></div>
+        </div>
+        <small>Displayed currency is for convenience. Online payment will be charged in NGN.</small>
+      </div>
+      <form id="checkoutForm" class="checkout-form">
+        <h3>Delivery details</h3>
+        <div class="checkout-grid">
+          <label>Full name<input name="name" autocomplete="name" required></label>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+          <label>Phone number<input name="phone" type="tel" autocomplete="tel" required></label>
+          <label>Quantity<input id="checkoutQuantity" name="quantity" type="number" min="1" value="1" required></label>
+          <label>Country
+            <select id="checkoutCountry" name="country" required>
+              <option value="Nigeria">Nigeria</option>
+              <option value="Ghana">Ghana</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="United States">United States</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label>State / Region<input id="checkoutState" name="state" autocomplete="address-level1" required></label>
+          <label class="checkout-full">Delivery address<textarea name="address" autocomplete="street-address" required></textarea></label>
+          <label class="checkout-full">Order note <span>(optional)</span><textarea name="note" placeholder="Colour, delivery note, or anything we should know."></textarea></label>
+        </div>
+        <p id="checkoutNotice" class="checkout-notice">Secure Paystack payment is being connected. Until it is switched on, Buy Now will continue the completed order through WhatsApp.</p>
+        <button id="checkoutSubmit" class="checkout-submit" type="submit">Continue order</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js?v=store-20260926-1"></script>
 </body>
 </html>

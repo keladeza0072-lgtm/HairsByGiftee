@@ -3,9 +3,10 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14
 
 const WA="2347087861972";
 
-const state={products:[],hotDeals:[],reviews:[],announcements:[]};
-const loading={products:true,hotDeals:true,reviews:true,announcements:true};
-const loadError={products:false,hotDeals:false,reviews:false,announcements:false};
+const state={products:[],hotDeals:[],reviews:[],announcements:[],settings:[]};
+const loading={products:true,hotDeals:true,reviews:true,announcements:true,settings:true};
+const loadError={products:false,hotDeals:false,reviews:false,announcements:false,settings:false};
+const PAYMENTS_CONNECTED=false;
 let activeCategory="All";
 let searchTerm="";
 let reviewIndex=0;
@@ -56,6 +57,24 @@ const productImageMarkup=p=>{
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
   "Hi HairsByGiftee ❤️\nI'm interested in the "+p.name+".\n"+(p.detail||"")+"\nPrice: ₦"+Number(price).toLocaleString("en-NG")+"\n\nIs it currently available?"
 );
+const stockCount=item=>{
+  if(item?.stock===null||item?.stock===undefined||item?.stock==="")return 1;
+  const n=Math.floor(Number(item.stock));
+  return Number.isFinite(n)?Math.max(0,n):1;
+};
+const isInStock=item=>item?.available!==false&&stockCount(item)>0;
+const checkoutSettings=()=>state.settings.find(x=>x.id==="checkout")||{};
+let checkoutItem=null;
+
+function deliveryFor(country,stateName){
+  const cfg=checkoutSettings();
+  if(country==="Nigeria"){
+    const isLagos=/lagos/i.test(String(stateName||""));
+    const fee=Number(isLagos?cfg.lagosFee:cfg.nigeriaFee);
+    return Number.isFinite(fee)&&fee>0?{fee,label:money(fee)}:{fee:0,label:"Confirmed before payment"};
+  }
+  return {fee:0,label:cfg.internationalNote||"Confirmed separately"};
+}
 
 async function loadFxRates(){
   const currencySelect=document.querySelector("#currencySelect");
@@ -96,7 +115,7 @@ async function loadFxRates(){
 }
 
 function visibleProducts(){
-  return state.products.filter(p=>p.available!==false).filter(p=>{
+  return state.products.filter(isInStock).filter(p=>{
     const categoryOk=activeCategory==="All"||String(p.category||"")===activeCategory;
     const hay=(String(p.name||"")+" "+String(p.category||"")+" "+String(p.detail||"")).toLowerCase();
     return categoryOk&&(!searchTerm||hay.includes(searchTerm));
@@ -107,7 +126,7 @@ function productCard(p){
   const badges=[
     p.bestseller?'<span class="badge badge-best">Bestseller</span>':""
   ].join("");
-  return `<article class="product" data-product-id="${esc(p.id)}" tabindex="0" role="button">
+  return `<article class="product" data-product-id="${esc(p.id)}">
     <div class="product-image">
       ${productImageMarkup(p)}
       ${badges}
@@ -116,13 +135,13 @@ function productCard(p){
       <h3>${esc(p.name)}</h3>
       <div class="product-meta">${esc(p.detail||"")}</div>
       <div class="price"><strong>${money(p.price)}</strong></div>
-      <span class="view-details">View Details</span>
+      <button class="view-details buy-card" type="button" data-buy-product="${esc(p.id)}">Buy Now</button>
     </div>
   </article>`;
 }
 
 function renderFilters(){
-  const categories=["All",...new Set(state.products.filter(p=>p.available!==false).map(p=>p.category).filter(Boolean))];
+  const categories=["All",...new Set(state.products.filter(isInStock).map(p=>p.category).filter(Boolean))];
   document.querySelector("#categoryFilters").innerHTML=categories.map(c=>`<button type="button" class="${c===activeCategory?"active":""}" data-category="${esc(c)}">${esc(c)}</button>`).join("");
   document.querySelectorAll("[data-category]").forEach(btn=>btn.onclick=()=>{
     activeCategory=btn.dataset.category;
@@ -157,7 +176,7 @@ function dealCard(d){
       <h3>${esc(d.name)}</h3>
       <p class="deal-description">${esc(d.detail||"")}</p>
       <div class="deal-price"><strong>${money(d.price)}</strong></div>
-      <span class="deal-view">View Deal</span>
+      <button class="deal-view buy-card" type="button" data-buy-deal="${esc(d.id)}">Buy Now</button>
     </div>
   </article>`;
 }
@@ -167,7 +186,7 @@ function renderDeals(){
   const rail=document.querySelector("#dealRail");
   if(!section||!rail)return;
   if(loading.hotDeals||loadError.hotDeals){section.hidden=true;rail.innerHTML="";return;}
-  const deals=state.hotDeals.filter(d=>d.available!==false);
+  const deals=state.hotDeals.filter(isInStock);
   section.hidden=!deals.length;
   if(!deals.length){rail.innerHTML="";return;}
   rail.innerHTML=deals.map(dealCard).join("");
@@ -176,9 +195,10 @@ function renderDeals(){
 
 function wireDeals(){
   document.querySelectorAll("[data-deal-id]").forEach(card=>{
-    const open=()=>openDeal(card.dataset.dealId);
-    card.onclick=open;
-    card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}};
+    card.onclick=e=>{if(!e.target.closest("[data-buy-deal]"))openDeal(card.dataset.dealId)};
+  });
+  document.querySelectorAll("[data-buy-deal]").forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation(); openCheckout("deal",btn.dataset.buyDeal);
   });
 }
 
@@ -209,18 +229,19 @@ function openDeal(id){
   document.querySelector("#modalCategory").textContent="HOT DEAL";
   document.querySelector("#modalDetail").textContent=d.detail||"";
   document.querySelector("#modalPrice").innerHTML=`<strong>${money(d.price)}</strong>`;
-  document.querySelector("#modalStock").textContent=d.available===false?"Offer unavailable":"Offer available";
-  document.querySelector("#modalBuy").textContent="Claim deal on WhatsApp";
-  document.querySelector("#modalBuy").href=whatsapp(d,d.price);
+  document.querySelector("#modalStock").textContent=isInStock(d)?(stockCount(d)+" available"):"Offer unavailable";
+  const buy=document.querySelector("#modalBuy");
+  buy.textContent="Buy Now"; buy.dataset.kind="deal"; buy.dataset.id=d.id; buy.disabled=!isInStock(d);
   document.querySelector("#productModal").hidden=false;
   document.body.classList.add("modal-open");
 }
 
 function wireProducts(){
   document.querySelectorAll("[data-product-id]").forEach(card=>{
-    const open=()=>openProduct(card.dataset.productId);
-    card.onclick=open;
-    card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}};
+    card.onclick=e=>{if(!e.target.closest("[data-buy-product]"))openProduct(card.dataset.productId)};
+  });
+  document.querySelectorAll("[data-buy-product]").forEach(btn=>btn.onclick=e=>{
+    e.stopPropagation(); openCheckout("product",btn.dataset.buyProduct);
   });
 }
 
@@ -232,9 +253,9 @@ function openProduct(id){
   document.querySelector("#modalCategory").textContent=p.category||"";
   document.querySelector("#modalDetail").textContent=p.detail||"";
   document.querySelector("#modalPrice").innerHTML=`<strong>${money(p.price)}</strong>`;
-  document.querySelector("#modalStock").textContent=p.available===false?"Sold out":"Available";
-  document.querySelector("#modalBuy").textContent="Buy on WhatsApp";
-  document.querySelector("#modalBuy").href=whatsapp(p,p.price);
+  document.querySelector("#modalStock").textContent=isInStock(p)?(stockCount(p)+" available"):"Sold out";
+  const buy=document.querySelector("#modalBuy");
+  buy.textContent="Buy Now"; buy.dataset.kind="product"; buy.dataset.id=p.id; buy.disabled=!isInStock(p);
   document.querySelector("#productModal").hidden=false;
   document.body.classList.add("modal-open");
 }
@@ -242,6 +263,48 @@ function openProduct(id){
 function closeModal(){
   document.querySelector("#productModal").hidden=true;
   document.body.classList.remove("modal-open");
+}
+
+function updateCheckoutSummary(){
+  if(!checkoutItem)return;
+  const form=document.querySelector("#checkoutForm");
+  const qty=Math.max(1,Math.min(stockCount(checkoutItem),Number(form.quantity.value)||1));
+  form.quantity.value=qty;
+  const delivery=deliveryFor(form.country.value,form.state.value);
+  const subtotal=Number(checkoutItem.price||0)*qty;
+  document.querySelector("#checkoutSubtotal").textContent=money(subtotal);
+  document.querySelector("#checkoutDelivery").textContent=delivery.label;
+  document.querySelector("#checkoutTotal").textContent=money(subtotal+delivery.fee);
+}
+
+function openCheckout(kind,id){
+  const source=kind==="deal"?state.hotDeals:state.products;
+  const item=source.find(x=>String(x.id)===String(id));
+  if(!item||!isInStock(item))return;
+  checkoutItem=item;
+  closeModal();
+  const img=productImages(item)[0]||"";
+  const checkoutImage=document.querySelector("#checkoutImage");
+  if(img){checkoutImage.src=img;checkoutImage.alt=item.name||"";checkoutImage.hidden=false}
+  else{checkoutImage.removeAttribute("src");checkoutImage.alt="";checkoutImage.hidden=true}
+  document.querySelector("#checkoutTitle").textContent=item.name||"Order";
+  document.querySelector("#checkoutDetail").textContent=item.detail||"";
+  document.querySelector("#checkoutItemPrice").textContent=money(item.price);
+  const qty=document.querySelector("#checkoutQuantity");
+  qty.value=1; qty.max=String(stockCount(item));
+  document.querySelector("#checkoutNotice").textContent=PAYMENTS_CONNECTED
+    ?"Your order total will be verified securely before Paystack opens."
+    :"Secure Paystack payment is being connected. Until it is switched on, Buy Now will continue the completed order through WhatsApp.";
+  document.querySelector("#checkoutSubmit").textContent=PAYMENTS_CONNECTED?"Continue to secure payment":"Continue order";
+  document.querySelector("#checkoutModal").hidden=false;
+  document.body.classList.add("modal-open");
+  updateCheckoutSummary();
+}
+
+function closeCheckout(){
+  document.querySelector("#checkoutModal").hidden=true;
+  document.body.classList.remove("modal-open");
+  checkoutItem=null;
 }
 
 function reviewCard(r){
@@ -371,7 +434,37 @@ document.querySelector("#reviewPrev").onclick=()=>{reviewIndex--;renderReview();
 document.querySelector("#reviewNext").onclick=()=>{reviewIndex++;renderReview();restartReviews()};
 document.querySelector("#modalClose").onclick=closeModal;
 document.querySelector("#modalBackdrop").onclick=closeModal;
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeMenu()}});
+document.querySelector("#modalBuy").onclick=()=>{
+  const btn=document.querySelector("#modalBuy");
+  if(btn.dataset.id)openCheckout(btn.dataset.kind||"product",btn.dataset.id);
+};
+document.querySelector("#checkoutClose").onclick=closeCheckout;
+document.querySelector("#checkoutBackdrop").onclick=closeCheckout;
+document.querySelector("#checkoutQuantity").addEventListener("input",updateCheckoutSummary);
+document.querySelector("#checkoutCountry").addEventListener("change",updateCheckoutSummary);
+document.querySelector("#checkoutState").addEventListener("input",updateCheckoutSummary);
+document.querySelector("#checkoutForm").onsubmit=e=>{
+  e.preventDefault();
+  if(!checkoutItem)return;
+  const form=e.currentTarget;
+  if(!form.reportValidity())return;
+  const data=new FormData(form);
+  const qty=Math.max(1,Math.min(stockCount(checkoutItem),Number(data.get("quantity"))||1));
+  const delivery=deliveryFor(String(data.get("country")||""),String(data.get("state")||""));
+  if(PAYMENTS_CONNECTED){ alert("Secure payment connection is not enabled yet."); return; }
+  const lines=[
+    "Hi HairsByGiftee ❤️","I'd like to place this order:","",
+    checkoutItem.name+" × "+qty,
+    "Item total: ₦"+(Number(checkoutItem.price||0)*qty).toLocaleString("en-NG"),
+    delivery.fee?"Delivery: ₦"+delivery.fee.toLocaleString("en-NG"):"Delivery: to be confirmed","",
+    "Name: "+data.get("name"),"Email: "+data.get("email"),"Phone: "+data.get("phone"),
+    "Country: "+data.get("country"),"State/Region: "+data.get("state"),"Address: "+data.get("address")
+  ];
+  if(String(data.get("note")||"").trim())lines.push("Note: "+String(data.get("note")).trim());
+  window.open("https://wa.me/"+WA+"?text="+encodeURIComponent(lines.join("\n")),"_blank","noopener,noreferrer");
+  closeCheckout();
+};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeCheckout();closeMenu()}});
 
 render();
 loadFxRates();
@@ -379,3 +472,4 @@ watch("products");
 watch("hotDeals");
 watch("reviews");
 watch("announcements");
+watch("settings");

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css?v=owner-20260923-7">
+  <link rel="stylesheet" href="../styles.css?v=owner-20260926-1">
 </head>
 <body class="admin-body">
   <section id="loginView" class="login-view">
@@ -44,6 +44,8 @@
       <button data-tab="products">Products</button>
       <button data-tab="deals">Hot Deals</button>
       <button data-tab="announcements">Announcement</button>
+      <button data-tab="orders">Orders</button>
+      <button data-tab="delivery">Delivery</button>
       <button data-tab="reviews">Reviews</button>
       <a href="../" target="_blank">View Website ↗</a>
       <button id="logoutBtn">Log out</button>
@@ -169,7 +171,7 @@ const API_KEY="AIzaSyDpRFnf0iE_C-ft0-H1Fm79OXUmsIv1HUk";
 const FIRESTORE_BASE="https://firestore.googleapis.com/v1/projects/"+PROJECT+"/databases/(default)/documents";
 const STORAGE_BASE="https://firebasestorage.googleapis.com/v0/b/"+BUCKET+"/o";
 
-const state={products:[],hotDeals:[],reviews:[],announcements:[]};
+const state={products:[],hotDeals:[],reviews:[],announcements:[],orders:[],settings:[]};
 let tab="home",editingId=null,editingDealId=null,editingAnnouncementId=null;
 
 const token=()=>sessionStorage.getItem("hbg_id_token")||"";
@@ -334,16 +336,20 @@ async function uploadMany(files,folder){
   return out;
 }
 async function load(){
-  const [products,hotDeals,reviews,announcements]=await Promise.all([
+  const [products,hotDeals,reviews,announcements,orders,settings]=await Promise.all([
     listCollection("products"),
     listCollection("hotDeals"),
     listCollection("reviews"),
-    listCollection("announcements")
+    listCollection("announcements"),
+    listCollection("orders"),
+    listCollection("settings")
   ]);
   state.products=products;
   state.hotDeals=hotDeals;
   state.reviews=reviews;
   state.announcements=announcements;
+  state.orders=orders;
+  state.settings=settings;
   render();
 }
 function setBusy(form,busy,label="Saving…"){
@@ -356,7 +362,7 @@ function home(){
   const activeAnnouncement=state.announcements.find(x=>x.active!==false);
   return `<h1 class="admin-title">Welcome back</h1><p class="muted">Everything here updates the live website.</p>
   <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="announcements">✦<b>Announcement</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
-  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.hotDeals.filter(x=>x.available!==false).length} live hot deals • ${state.reviews.filter(x=>x.published!==false).length} reviews</p><p class="muted">Announcement: ${esc(activeAnnouncement?.message||"None live")}</p></div>
+  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.hotDeals.filter(x=>x.available!==false).length} live hot deals • ${state.orders.length} orders • ${state.reviews.filter(x=>x.published!==false).length} reviews</p><p class="muted">Announcement: ${esc(activeAnnouncement?.message||"None live")}</p></div>
   ${state.products.length===0?'<div class="panel"><b>No products yet</b><p class="muted">Use Add Product to publish your first real wig and photos.</p></div>':""}`;
 }
 
@@ -366,6 +372,7 @@ function products(){
   <form id="productForm" class="panel form-grid">
     <label class="field">Product name<input name="name" required value="${esc(edit?.name||"")}"></label>
     <label class="field">Regular price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}"></label>
+    <label class="field">Stock quantity<input name="stock" type="number" min="0" step="1" required value="${edit?.stock??1}"><small>Use 0 when sold out.</small></label>
     <label class="field">Category<select name="category">${["Bone Straight","Curly","Bob Wigs","Coloured Wigs","Other"].map(c=>`<option ${edit?.category===c?"selected":""}>${c}</option>`).join("")}</select></label>
     <label class="field">Hair details<input name="detail" value="${esc(edit?.detail||"")}" placeholder='22” • 200% • HD Lace'></label>
     <label class="field full">Product photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select several photos at once. The first photo is used on the product card. Large photos are automatically optimized for fast loading at high quality. ${edit?.image||edit?.images?.length?"Leave blank to keep the current photos.":""}</small></label>
@@ -373,7 +380,7 @@ function products(){
     <label class="check"><input name="bestseller" type="checkbox" ${edit?.bestseller?"checked":""}> Bestseller</label>
     <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Changes":"Publish Product"}</button>${edit?'<button class="mini" id="cancelEdit" type="button">Cancel</button>':""}</div>
   </form>
-  <div class="panel admin-list">${state.products.map(p=>`<div class="row product-row"><div class="row-product">${p.image?`<img src="${esc(p.image)}" alt="">`:""}<div><b>${esc(p.name)}</b><br><small>${esc(p.detail||"")} • ${naira(p.price)}</small></div></div><span>${p.available===false?"Sold out":"Available"}</span><div class="row-actions"><button class="mini" data-edit-product="${p.id}">Edit</button><button class="mini" data-toggle-product="${p.id}">${p.available===false?"Make available":"Mark sold out"}</button><button class="mini danger" data-delete-product="${p.id}">Delete</button></div></div>`).join("")||"<p>No products yet.</p>"}</div>`;
+  <div class="panel admin-list">${state.products.map(p=>`<div class="row product-row"><div class="row-product">${p.image?`<img src="${esc(p.image)}" alt="">`:""}<div><b>${esc(p.name)}</b><br><small>${esc(p.detail||"")} • ${naira(p.price)} • Stock ${p.stock??1}</small></div></div><span>${p.available===false?"Sold out":"Available"}</span><div class="row-actions"><button class="mini" data-edit-product="${p.id}">Edit</button><button class="mini" data-toggle-product="${p.id}">${p.available===false?"Make available":"Mark sold out"}</button><button class="mini danger" data-delete-product="${p.id}">Delete</button></div></div>`).join("")||"<p>No products yet.</p>"}</div>`;
 }
 function deals(){
   const edit=state.hotDeals.find(x=>x.id===editingDealId);
@@ -381,12 +388,13 @@ function deals(){
   <form id="dealForm" class="panel form-grid">
     <label class="field">Deal title<input name="name" required value="${esc(edit?.name||"")}" placeholder="e.g. Weekend Wig Bundle"></label>
     <label class="field">Offer price (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}"></label>
+    <label class="field">Stock quantity<input name="stock" type="number" min="0" step="1" required value="${edit?.stock??1}"><small>Use 0 when the deal is sold out.</small></label>
     <label class="field full">Offer description<textarea name="detail" maxlength="700" required placeholder="Describe the wigs included, lengths, offer details, or anything the customer should know.">${esc(edit?.detail||"")}</textarea></label>
     <label class="field full">Deal photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>Select one or several photos. The first image is the cover photo. Large photos are automatically optimized for fast loading at high quality. Leave blank while editing to keep the current photos.</small></label>
     <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Show this deal on the website</label>
     <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Deal":"Publish Deal"}</button>${edit?'<button class="mini" id="cancelDealEdit" type="button">Cancel</button>':""}</div>
   </form>
-  <div class="panel admin-list">${state.hotDeals.map(d=>`<div class="row product-row"><div class="row-product">${d.image?`<img src="${esc(d.image)}" alt="">`:""}<div><b>${esc(d.name)}</b><br><small>${naira(d.price)} • ${esc(d.detail||"")}</small></div></div><span>${d.available===false?"Hidden":"Live"}</span><div class="row-actions"><button class="mini" data-edit-deal="${d.id}">Edit</button><button class="mini" data-toggle-deal="${d.id}">${d.available===false?"Show":"Hide"}</button><button class="mini danger" data-delete-deal="${d.id}">Delete</button></div></div>`).join("")||"<p>No hot deals yet.</p>"}</div>`;
+  <div class="panel admin-list">${state.hotDeals.map(d=>`<div class="row product-row"><div class="row-product">${d.image?`<img src="${esc(d.image)}" alt="">`:""}<div><b>${esc(d.name)}</b><br><small>${naira(d.price)} • Stock ${d.stock??1} • ${esc(d.detail||"")}</small></div></div><span>${d.available===false?"Hidden":"Live"}</span><div class="row-actions"><button class="mini" data-edit-deal="${d.id}">Edit</button><button class="mini" data-toggle-deal="${d.id}">${d.available===false?"Show":"Hide"}</button><button class="mini danger" data-delete-deal="${d.id}">Delete</button></div></div>`).join("")||"<p>No hot deals yet.</p>"}</div>`;
 }
 
 function announcements(){
@@ -400,13 +408,31 @@ function announcements(){
   <div class="panel admin-list">${state.announcements.map(a=>`<div class="row"><div><b>${esc(a.message)}</b><br><small>${a.active===false?"Hidden":"Showing now"}</small></div><div class="row-actions"><button class="mini" data-edit-announcement="${a.id}">Edit</button><button class="mini" data-toggle-announcement="${a.id}">${a.active===false?"Show":"Hide"}</button><button class="mini danger" data-delete-announcement="${a.id}">Delete</button></div></div>`).join("")||"<p>No announcements yet.</p>"}</div>`;
 }
 
+function orders(){
+  const statuses=["paid","processing","shipped","delivered","cancelled","refunded"];
+  return `<h1 class="admin-title">Orders</h1><p class="muted">Paid online orders will appear here once Paystack is connected.</p>
+  <div class="panel admin-list">${state.orders.map(o=>`<div class="row order-row"><div><b>${esc(o.orderNumber||o.id)}</b><br><small>${esc(o.customerName||"Customer")} • ${naira(o.total||0)} • ${esc(o.paymentStatus||"pending")}</small><br><small>${esc(o.itemName||"")} × ${o.quantity||1} • ${esc(o.phone||"")} • ${esc(o.address||"")}</small></div><span class="order-status">${esc(o.paymentStatus||"pending")}</span><select class="mini" data-order-status="${o.id}">${statuses.map(s=>`<option value="${s}" ${(o.fulfillmentStatus||"paid")===s?"selected":""}>${s}</option>`).join("")}</select></div>`).join("")||"<p>No online orders yet. The order database is ready for the Paystack connection.</p>"}</div>`;
+}
+
+function delivery(){
+  const cfg=state.settings.find(x=>x.id==="checkout")||{};
+  return `<h1 class="admin-title">Delivery</h1><p class="muted">These fees are ready for the checkout flow and can be changed without editing code.</p>
+  <div class="panel notice"><b>Online payments are not enabled yet.</b><br>Paystack will be connected after the business account and secure backend are ready.</div>
+  <form id="deliveryForm" class="panel form-grid">
+    <label class="field">Lagos delivery fee (₦)<input name="lagosFee" type="number" min="0" value="${Number(cfg.lagosFee||0)}"></label>
+    <label class="field">Other Nigeria delivery fee (₦)<input name="nigeriaFee" type="number" min="0" value="${Number(cfg.nigeriaFee||0)}"></label>
+    <label class="field full">International delivery note<input name="internationalNote" maxlength="120" value="${esc(cfg.internationalNote||"International delivery is confirmed separately.")}"></label>
+    <div class="field full admin-submit"><button class="btn primary" type="submit">Save Delivery Settings</button></div>
+  </form>`;
+}
+
 function reviews(){
   return `<h1 class="admin-title">Reviews</h1><p class="muted">Publish customer feedback and photos.</p>
   <form id="reviewForm" class="panel form-grid"><label class="field">Customer name<input name="name" required></label><label class="field">Rating<select name="rating"><option>5</option><option>4</option><option>3</option></select></label><label class="field full">Customer photo<input name="imageFile" type="file" accept="image/*"><small>Large photos are automatically optimized for fast loading at high quality.</small></label><label class="field full">What did they say?<textarea name="quote" required></textarea></label><div class="field full"><button class="btn primary" type="submit">Publish Review</button></div></form>
   <div class="panel admin-list">${state.reviews.map(r=>`<div class="row"><div><b>${esc(r.name)} • ${"★".repeat(r.rating||5)}</b><br><small>“${esc(r.quote)}”</small></div><button class="mini" data-toggle-review="${r.id}">${r.published===false?"Show":"Hide"}</button><button class="mini danger" data-delete-review="${r.id}">Delete</button></div>`).join("")||"<p>No reviews yet.</p>"}</div>`;
 }
 function render(){
-  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():tab==="announcements"?announcements():reviews();
+  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():tab==="announcements"?announcements():tab==="orders"?orders():tab==="delivery"?delivery():reviews();
   screen().querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>switchTab(b.dataset.go));
   wireActions();
 }
@@ -425,7 +451,8 @@ function wireActions(){
     const uploadedImages=files.length?await uploadMany(files,"products"):[];
     const images=uploadedImages.length?[...existingImages,...uploadedImages]:existingImages;
     const image=images[0]||old?.image||"";
-    const data={name:f.get("name").trim(),price:Number(f.get("price")),category:f.get("category"),detail:f.get("detail").trim(),image,images,available:f.get("available")==="on",bestseller:f.get("bestseller")==="on",updatedAt:new Date()};
+    const stock=Math.max(0,Math.floor(Number(f.get("stock"))||0));
+    const data={name:f.get("name").trim(),price:Number(f.get("price")),stock,category:f.get("category"),detail:f.get("detail").trim(),image,images,available:f.get("available")==="on"&&stock>0,bestseller:f.get("bestseller")==="on",updatedAt:new Date()};
     if(editingId)await updateDoc("products",editingId,data);else await createDoc("products",{...data,createdAt:new Date()});
     editingId=null;await load();alert("Product updated on the live website.");
   }catch(e){alert("Could not save product: "+e.message)}finally{setBusy(pf,false)}};
@@ -444,7 +471,8 @@ function wireActions(){
     const uploadedImages=files.length?await uploadMany(files,"hot-deals"):[];
     const images=uploadedImages.length?[...existingImages,...uploadedImages]:existingImages;
     if(!images.length)throw new Error("Add at least one deal photo.");
-    const data={name:f.get("name").trim(),price:Number(f.get("price")),detail:f.get("detail").trim(),image:images[0],images,available:f.get("available")==="on",updatedAt:new Date()};
+    const stock=Math.max(0,Math.floor(Number(f.get("stock"))||0));
+    const data={name:f.get("name").trim(),price:Number(f.get("price")),stock,detail:f.get("detail").trim(),image:images[0],images,available:f.get("available")==="on"&&stock>0,updatedAt:new Date()};
     if(editingDealId)await updateDoc("hotDeals",editingDealId,data);else await createDoc("hotDeals",{...data,createdAt:new Date()});
     editingDealId=null;await load();alert("Hot Deal published on the live website.");
   }catch(e){alert("Could not save Hot Deal: "+e.message)}finally{setBusy(df,false)}};
@@ -481,6 +509,24 @@ function wireActions(){
     await load();
   });
   document.querySelectorAll("[data-delete-announcement]").forEach(b=>b.onclick=async()=>{if(confirm("Delete this announcement?")){await deleteDoc("announcements",b.dataset.deleteAnnouncement);await load()}});
+
+  document.querySelectorAll("[data-order-status]").forEach(select=>select.onchange=async()=>{
+    await updateDoc("orders",select.dataset.orderStatus,{fulfillmentStatus:select.value,updatedAt:new Date()});
+    await load();
+  });
+
+  const deliveryForm=document.querySelector("#deliveryForm");
+  if(deliveryForm)deliveryForm.onsubmit=async e=>{e.preventDefault();setBusy(deliveryForm,true);try{
+    const f=new FormData(deliveryForm);
+    await updateDoc("settings","checkout",{
+      lagosFee:Math.max(0,Number(f.get("lagosFee"))||0),
+      nigeriaFee:Math.max(0,Number(f.get("nigeriaFee"))||0),
+      internationalNote:String(f.get("internationalNote")||"").trim(),
+      onlineOrdersEnabled:false,
+      updatedAt:new Date()
+    });
+    await load(); alert("Delivery settings saved.");
+  }catch(e){alert("Could not save delivery settings: "+e.message)}finally{setBusy(deliveryForm,false)}};
 
   const rf=document.querySelector("#reviewForm");
   if(rf)rf.onsubmit=async e=>{e.preventDefault();setBusy(rf,true);try{
