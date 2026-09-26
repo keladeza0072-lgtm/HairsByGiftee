@@ -241,8 +241,8 @@ async function request(url,opts={},needsAuth=true,retried=false){
   }
   return data;
 }
-async function listCollection(name){
-  const data=await request(FIRESTORE_BASE+"/"+name+"?pageSize=100",{},false);
+async function listCollection(name,needsAuth=false){
+  const data=await request(FIRESTORE_BASE+"/"+name+"?pageSize=100",{},needsAuth);
   return (data.documents||[]).map(docFromFirestore).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
 }
 async function createDoc(name,data){
@@ -341,7 +341,7 @@ async function load(){
     listCollection("hotDeals"),
     listCollection("reviews"),
     listCollection("announcements"),
-    listCollection("orders"),
+    listCollection("orders",true),
     listCollection("settings")
   ]);
   state.products=products;
