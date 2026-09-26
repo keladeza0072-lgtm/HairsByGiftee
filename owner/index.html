@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css?v=owner-20260926-3">
+  <link rel="stylesheet" href="../styles.css?v=owner-20260926-4">
 </head>
 <body class="admin-body">
   <section id="loginView" class="login-view">
@@ -38,8 +38,18 @@
   </section>
 
   <div id="adminView" class="admin-wrap" hidden>
-    <aside class="side">
-      <div class="logo"><span>HairsByGiftee</span><small>OWNER</small></div>
+    <header class="admin-mobile-bar">
+      <button id="adminMenuToggle" class="admin-mobile-menu" type="button" aria-label="Open owner menu" aria-expanded="false" aria-controls="adminSidebar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+      </button>
+      <div class="admin-mobile-heading">
+        <strong>HairsByGiftee</strong>
+        <small id="adminMobileSection">Home</small>
+      </div>
+    </header>
+    <button id="adminMenuBackdrop" class="admin-menu-backdrop" type="button" aria-label="Close owner menu" hidden></button>
+    <aside id="adminSidebar" class="side" aria-label="Owner navigation">
+      <div class="logo"><span>HairsByGiftee</span><small>OWNER MENU</small></div>
       <button data-tab="home" class="active">Home</button>
       <button data-tab="products">Products</button>
       <button data-tab="deals">Hot Deals</button>
@@ -48,7 +58,7 @@
       <button data-tab="orders">Orders</button>
       <button data-tab="delivery">Delivery</button>
       <button data-tab="reviews">Reviews</button>
-      <a href="../" target="_blank">View Website ↗</a>
+      <a href="../" target="_blank" rel="noreferrer">View Website ↗</a>
       <button id="logoutBtn">Log out</button>
     </aside>
     <main class="admin-main">
@@ -70,7 +80,30 @@
   const reset=document.getElementById("resetBtn");
   const message=document.getElementById("message");
   const success=document.getElementById("success");
+  const adminMenuToggle=document.getElementById("adminMenuToggle");
+  const adminMenuBackdrop=document.getElementById("adminMenuBackdrop");
+  const adminSidebar=document.getElementById("adminSidebar");
   let dashboardLoaded=false;
+
+  function setAdminMenu(open){
+    if(!adminMenuToggle||!adminMenuBackdrop||!adminSidebar)return;
+    adminSidebar.classList.toggle("open",open);
+    adminMenuBackdrop.hidden=!open;
+    adminMenuToggle.setAttribute("aria-expanded",String(open));
+    adminMenuToggle.setAttribute("aria-label",open?"Close owner menu":"Open owner menu");
+    document.body.classList.toggle("admin-menu-open",open);
+  }
+  if(adminMenuToggle){
+    adminMenuToggle.addEventListener("click",()=>setAdminMenu(!adminSidebar.classList.contains("open")));
+  }
+  if(adminMenuBackdrop)adminMenuBackdrop.addEventListener("click",()=>setAdminMenu(false));
+  if(adminSidebar){
+    adminSidebar.addEventListener("click",e=>{
+      if(e.target.closest("[data-tab],a,#logoutBtn"))setAdminMenu(false);
+    });
+  }
+  window.addEventListener("resize",()=>{if(window.innerWidth>900)setAdminMenu(false)});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")setAdminMenu(false)});
 
   function showError(text){
     success.hidden=true;
@@ -470,6 +503,11 @@ function render(){
 function switchTab(next){
   tab=next;editingId=null;editingDealId=null;editingClassId=null;editingAnnouncementId=null;
   document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab===tab));
+  const mobileLabel=document.querySelector("#adminMobileSection");
+  if(mobileLabel){
+    const labels={home:"Home",products:"Products",deals:"Hot Deals",classes:"Classes",announcements:"Announcement",orders:"Orders",delivery:"Delivery",reviews:"Reviews"};
+    mobileLabel.textContent=labels[tab]||"Owner";
+  }
   render();
 }
 function wireActions(){
