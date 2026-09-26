@@ -78,3 +78,196 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .side button[data-tab="classes"]{white-space:nowrap}
 
 @media(min-width:901px){.admin-body .quick{grid-template-columns:repeat(5,1fr)}}
+
+/* Owner portal mobile optimization */
+.admin-body{overflow-x:hidden}
+.admin-main,#screen{min-width:0}
+.admin-main *{max-width:100%}
+.admin-top #ownerEmail{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.admin-list,.panel{overflow-wrap:anywhere}
+.field input,.field select,.field textarea{width:100%;min-width:0}
+.row-product{min-width:0}
+.row-product>div{min-width:0}
+.row-product small{display:block;line-height:1.5}
+.row-actions{flex-wrap:wrap}
+
+@media(max-width:900px){
+  .admin-wrap{display:block;min-height:100dvh}
+  .side{
+    position:sticky;
+    top:0;
+    z-index:50;
+    height:auto;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+    scrollbar-width:none;
+    padding:10px max(12px,env(safe-area-inset-left)) 10px max(12px,env(safe-area-inset-right));
+    box-shadow:0 5px 20px rgba(61,39,48,.2);
+  }
+  .side::-webkit-scrollbar{display:none}
+  .side .logo{display:none}
+  .side button,.side a{
+    flex:0 0 auto;
+    width:auto;
+    min-height:44px;
+    margin:0;
+    padding:0 14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:10px;
+    white-space:nowrap;
+    scroll-snap-align:start;
+    font-size:12px;
+  }
+  .side button.active{
+    background:#fff;
+    color:#4b2f39;
+    box-shadow:0 2px 10px rgba(0,0,0,.12);
+  }
+
+  .admin-main{
+    width:100%;
+    padding:18px 14px calc(44px + env(safe-area-inset-bottom));
+  }
+  .admin-top{
+    gap:10px;
+    padding:0 2px 14px;
+    font-size:11px;
+  }
+  .admin-top .preview-link{flex:0 0 auto}
+  .admin-top #ownerEmail{text-align:right}
+
+  .admin-title{
+    font-size:36px;
+    line-height:1.05;
+    margin:24px 0 7px;
+  }
+  .admin-title + .muted{font-size:13px;line-height:1.55;margin-top:0}
+
+  .quick{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin:20px 0;
+  }
+  .quick button{
+    min-height:86px;
+    padding:16px 10px;
+    border-radius:14px;
+    touch-action:manipulation;
+  }
+
+  .panel{
+    padding:17px;
+    margin-top:14px;
+    border-radius:14px;
+    box-shadow:0 5px 18px rgba(81,47,60,.035);
+  }
+  .form-grid{grid-template-columns:1fr;gap:14px}
+  .field.full{grid-column:auto}
+  .field{font-size:12px;gap:7px}
+  .field input,.field select,.field textarea{
+    min-height:48px;
+    padding:12px 13px;
+    border-radius:9px;
+    font-size:16px;
+    line-height:1.3;
+  }
+  .field textarea{min-height:116px}
+  .field input[type="file"]{
+    min-height:auto;
+    padding:10px;
+    font-size:13px;
+  }
+  .check{
+    min-height:44px;
+    align-items:center;
+    padding:5px 0;
+    line-height:1.4;
+  }
+  .check input{width:20px;height:20px;flex:0 0 auto}
+
+  .admin-submit{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:9px;
+    align-items:stretch;
+  }
+  .admin-submit .btn,.admin-submit .mini{
+    width:100%;
+    min-height:46px;
+  }
+  .btn,.mini{touch-action:manipulation}
+  .mini{min-height:42px;padding:9px 12px;font-size:12px}
+
+  .row,.order-row{
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:16px 0;
+    align-items:start;
+  }
+  .row-product{align-items:flex-start;gap:12px}
+  .row-product img{
+    width:64px;
+    height:64px;
+    flex:0 0 64px;
+    border-radius:9px;
+  }
+  .row-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;
+    gap:8px;
+  }
+  .row-actions .mini{width:100%}
+  .row-actions .danger:last-child:nth-child(3){grid-column:1/-1}
+
+  .order-status{justify-self:start}
+  .order-row>select{
+    width:100%;
+    min-height:44px;
+    font-size:16px;
+  }
+  .shipping-map{padding:13px}
+  .shipping-map small{font-size:11px;line-height:1.75}
+
+  .notice,.admin-notice{font-size:12px;line-height:1.55}
+}
+
+@media(max-width:520px){
+  .admin-main{padding-inline:12px}
+  .admin-title{font-size:32px}
+  .quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .quick button{min-height:78px;padding:13px 8px;font-size:12px}
+  .panel{padding:15px;border-radius:12px}
+  .row-actions{grid-template-columns:1fr}
+  .row-actions .danger:last-child:nth-child(3){grid-column:auto}
+  .row-product img{width:56px;height:56px;flex-basis:56px}
+
+  .login-view{
+    min-height:100dvh;
+    padding:18px 12px;
+    align-items:center;
+  }
+  .login-card{
+    width:100%;
+    padding:24px 18px;
+    border-radius:18px;
+  }
+  .login-card .logo{margin-bottom:22px}
+  .login-card .logo span{font-size:28px}
+  .login-card h1{font-size:38px}
+  .login-card .field input{font-size:16px;min-height:50px}
+  .password-toggle{min-height:36px}
+  .login-card .btn{min-height:50px}
+}
+
+@media(max-width:360px){
+  .quick{grid-template-columns:1fr}
+  .admin-top #ownerEmail{max-width:52vw}
+}
