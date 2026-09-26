@@ -12,3 +12,10 @@ When Paystack setup is complete, this backend will handle:
 - stock reduction after verified payment
 
 Payment credentials must be stored server-side and must not be committed to the repository.
+
+
+## Shipping model
+
+Nigeria shipping is split into seven zones: Lagos, South West, South East, South South, North Central, North East, and North West. The storefront previews the owner's saved zone rate. When Paystack is enabled, the backend must calculate shipping again server-side and must never trust a delivery fee sent by the browser.
+
+Classes use the same future payment backend but do not receive a shipping charge.

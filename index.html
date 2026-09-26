@@ -12,7 +12,7 @@
   <link rel="preload" as="image" href="./assets/hero-mobile.webp?v=20260924-7" media="(max-width: 900px)" fetchpriority="high">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./storefront.css?v=store-20260926-1" />
+  <link rel="stylesheet" href="./storefront.css?v=store-20260926-2" />
 </head>
 <body class="storefront">
   <div id="announcementBar" class="announcement-bar" role="status" aria-live="polite" hidden>
@@ -56,6 +56,7 @@
           <a href="#top">Home</a>
           <a class="mobile-menu-link" href="#shop">Shop</a>
           <a class="mobile-menu-link" href="#deals">Hot Deals</a>
+          <a href="#classes">Classes</a>
           <a href="#reviews">Reviews</a>
           <a href="#contact">Contact</a>
           <a class="menu-whatsapp" href="https://wa.me/2347087861972" target="_blank" rel="noreferrer">
@@ -117,6 +118,17 @@
           <button id="dealsToggle" class="deals-toggle" type="button" aria-expanded="false">View all deals</button>
         </div>
         <div id="dealRail" class="deal-rail" aria-label="Hot deal products"></div>
+      </div>
+    </section>
+
+    <section id="classes" class="classes-section" hidden>
+      <div class="shell">
+        <div class="classes-head">
+          <p class="classes-kicker">LEARN WITH HAIRSBYGIFTEE</p>
+          <h2>Hairstyling Classes</h2>
+          <p>Hands-on and guided training for stylists who want to sharpen their craft.</p>
+        </div>
+        <div id="classGrid" class="class-grid"></div>
       </div>
     </section>
 
@@ -223,8 +235,8 @@
           <label>Full name<input name="name" autocomplete="name" required></label>
           <label>Email<input name="email" type="email" autocomplete="email" required></label>
           <label>Phone number<input name="phone" type="tel" autocomplete="tel" required></label>
-          <label>Quantity<input id="checkoutQuantity" name="quantity" type="number" min="1" value="1" required></label>
-          <label>Country
+          <label><span id="checkoutQuantityLabel">Quantity</span><input id="checkoutQuantity" name="quantity" type="number" min="1" value="1" required></label>
+          <label id="checkoutCountryField">Country
             <select id="checkoutCountry" name="country" required>
               <option value="Nigeria">Nigeria</option>
               <option value="Ghana">Ghana</option>
@@ -233,8 +245,11 @@
               <option value="Other">Other</option>
             </select>
           </label>
-          <label>State / Region<input id="checkoutState" name="state" autocomplete="address-level1" required></label>
-          <label class="checkout-full">Delivery address<textarea name="address" autocomplete="street-address" required></textarea></label>
+          <label id="checkoutStateField">State
+            <select id="checkoutState" name="state" autocomplete="address-level1" required></select>
+          </label>
+          <label id="checkoutRegionField" hidden>State / Region<input id="checkoutRegion" name="region" autocomplete="address-level1"></label>
+          <label id="checkoutAddressField" class="checkout-full">Delivery address<textarea id="checkoutAddress" name="address" autocomplete="street-address" required></textarea></label>
           <label class="checkout-full">Order note <span>(optional)</span><textarea name="note" placeholder="Colour, delivery note, or anything we should know."></textarea></label>
         </div>
         <p id="checkoutNotice" class="checkout-notice">Secure Paystack payment is being connected. Until it is switched on, Buy Now will continue the completed order through WhatsApp.</p>
@@ -243,6 +258,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=store-20260926-1"></script>
+  <script type="module" src="./app.js?v=store-20260926-2"></script>
 </body>
 </html>

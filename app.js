@@ -3,9 +3,9 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14
 
 const WA="2347087861972";
 
-const state={products:[],hotDeals:[],reviews:[],announcements:[],settings:[]};
-const loading={products:true,hotDeals:true,reviews:true,announcements:true,settings:true};
-const loadError={products:false,hotDeals:false,reviews:false,announcements:false,settings:false};
+const state={products:[],hotDeals:[],classes:[],reviews:[],announcements:[],settings:[]};
+const loading={products:true,hotDeals:true,classes:true,reviews:true,announcements:true,settings:true};
+const loadError={products:false,hotDeals:false,classes:false,reviews:false,announcements:false,settings:false};
 const PAYMENTS_CONNECTED=false;
 let activeCategory="All";
 let searchTerm="";
@@ -65,16 +65,75 @@ const stockCount=item=>{
 const isInStock=item=>item?.available!==false&&stockCount(item)>0;
 const checkoutSettings=()=>state.settings.find(x=>x.id==="checkout")||{};
 let checkoutItem=null;
+let checkoutKind="product";
 
-function deliveryFor(country,stateName){
+const NIGERIA_STATES=[
+  "Abia","Adamawa","Akwa Ibom","Anambra","Bauchi","Bayelsa","Benue","Borno","Cross River","Delta","Ebonyi","Edo","Ekiti","Enugu",
+  "FCT Abuja","Gombe","Imo","Jigawa","Kaduna","Kano","Katsina","Kebbi","Kogi","Kwara","Lagos","Nasarawa","Niger","Ogun","Ondo",
+  "Osun","Oyo","Plateau","Rivers","Sokoto","Taraba","Yobe","Zamfara"
+];
+const SHIPPING_ZONE_STATES={
+  "Lagos":["Lagos"],
+  "South West":["Ekiti","Ogun","Ondo","Osun","Oyo"],
+  "South East":["Abia","Anambra","Ebonyi","Enugu","Imo"],
+  "South South":["Akwa Ibom","Bayelsa","Cross River","Delta","Edo","Rivers"],
+  "North Central":["Benue","FCT Abuja","Kogi","Kwara","Nasarawa","Niger","Plateau"],
+  "North East":["Adamawa","Bauchi","Borno","Gombe","Taraba","Yobe"],
+  "North West":["Jigawa","Kaduna","Kano","Katsina","Kebbi","Sokoto","Zamfara"]
+};
+const SHIPPING_ZONE_FIELDS={
+  "Lagos":"shippingLagos","South West":"shippingSouthWest","South East":"shippingSouthEast",
+  "South South":"shippingSouthSouth","North Central":"shippingNorthCentral",
+  "North East":"shippingNorthEast","North West":"shippingNorthWest"
+};
+function shippingZoneForState(stateName){
+  const clean=String(stateName||"").trim();
+  return Object.keys(SHIPPING_ZONE_STATES).find(zone=>SHIPPING_ZONE_STATES[zone].includes(clean))||"";
+}
+function deliveryFor(country,stateName,subtotal=0){
   const cfg=checkoutSettings();
   if(country==="Nigeria"){
-    const isLagos=/lagos/i.test(String(stateName||""));
-    const fee=Number(isLagos?cfg.lagosFee:cfg.nigeriaFee);
-    return Number.isFinite(fee)&&fee>0?{fee,label:money(fee)}:{fee:0,label:"Confirmed before payment"};
+    const threshold=Number(cfg.freeShippingThreshold||0);
+    if(cfg.freeShippingEnabled===true&&threshold>0&&Number(subtotal)>=threshold){
+      return {fee:0,label:"Free",zone:shippingZoneForState(stateName)};
+    }
+    const zone=shippingZoneForState(stateName);
+    const field=SHIPPING_ZONE_FIELDS[zone];
+    let raw=field?cfg[field]:0;
+    if((raw===undefined||raw===null||raw==="")&&zone==="Lagos")raw=cfg.lagosFee;
+    if((raw===undefined||raw===null||raw==="")&&zone&&zone!=="Lagos")raw=cfg.nigeriaFee;
+    const fee=Number(raw);
+    return Number.isFinite(fee)&&fee>0
+      ?{fee,label:money(fee),zone}
+      :{fee:0,label:zone?"Delivery fee pending":"Select a Nigerian state",zone};
   }
-  return {fee:0,label:cfg.internationalNote||"Confirmed separately"};
+  return {fee:0,label:cfg.internationalNote||"Confirmed separately",zone:"International"};
 }
+function checkoutStateName(){
+  const country=document.querySelector("#checkoutCountry").value;
+  return country==="Nigeria"
+    ?document.querySelector("#checkoutState").value
+    :document.querySelector("#checkoutRegion").value.trim();
+}
+function syncCheckoutLocationFields(){
+  const country=document.querySelector("#checkoutCountry").value;
+  const isNigeria=country==="Nigeria";
+  const stateField=document.querySelector("#checkoutStateField");
+  const regionField=document.querySelector("#checkoutRegionField");
+  const state=document.querySelector("#checkoutState");
+  const region=document.querySelector("#checkoutRegion");
+  stateField.hidden=!isNigeria;
+  regionField.hidden=isNigeria;
+  state.required=isNigeria;
+  region.required=!isNigeria;
+}
+
+function populateNigeriaStates(){
+  const stateSelect=document.querySelector("#checkoutState");
+  if(!stateSelect)return;
+  stateSelect.innerHTML='<option value="">Select state</option>'+NIGERIA_STATES.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join("");
+}
+populateNigeriaStates();
 
 async function loadFxRates(){
   const currencySelect=document.querySelector("#currencySelect");
@@ -202,6 +261,32 @@ function wireDeals(){
   });
 }
 
+function classCard(c){
+  const format=[c.format,c.duration].filter(Boolean).join(" • ");
+  const schedule=[c.schedule,c.location].filter(Boolean).join(" · ");
+  const seats=stockCount(c);
+  return '<article class="class-card" data-class-id="'+esc(c.id)+'">'+
+    '<div class="class-image">'+productImageMarkup(c)+'<span class="class-badge">'+esc(c.format||"Class")+'</span></div>'+
+    '<div class="class-copy">'+
+      '<p class="class-meta">'+esc(format)+'</p>'+
+      '<h3>'+esc(c.name||"Hairstyling Class")+'</h3>'+
+      '<p class="class-description">'+esc(c.detail||"")+'</p>'+
+      '<p class="class-schedule">'+esc(schedule)+'</p>'+
+      '<div class="class-bottom"><strong>'+money(c.price)+'</strong><span>'+seats+' seat'+(seats===1?"":"s")+' left</span></div>'+
+      '<button class="class-book" type="button" data-book-class="'+esc(c.id)+'">Book Class</button>'+
+    '</div></article>';
+}
+function renderClasses(){
+  const section=document.querySelector("#classes");
+  const grid=document.querySelector("#classGrid");
+  if(!section||!grid)return;
+  if(loading.classes||loadError.classes){section.hidden=true;grid.innerHTML="";return;}
+  const classes=state.classes.filter(isInStock);
+  section.hidden=!classes.length;
+  grid.innerHTML=classes.map(classCard).join("");
+  document.querySelectorAll("[data-book-class]").forEach(btn=>btn.onclick=()=>openCheckout("class",btn.dataset.bookClass));
+}
+
 function setModalImages(item){
   const imgs=productImages(item);
   const modalImage=document.querySelector("#modalImage");
@@ -270,19 +355,23 @@ function updateCheckoutSummary(){
   const form=document.querySelector("#checkoutForm");
   const qty=Math.max(1,Math.min(stockCount(checkoutItem),Number(form.quantity.value)||1));
   form.quantity.value=qty;
-  const delivery=deliveryFor(form.country.value,form.state.value);
   const subtotal=Number(checkoutItem.price||0)*qty;
+  const delivery=checkoutKind==="class"
+    ?{fee:0,label:"Not required",zone:"Class booking"}
+    :deliveryFor(form.country.value,checkoutStateName(),subtotal);
   document.querySelector("#checkoutSubtotal").textContent=money(subtotal);
   document.querySelector("#checkoutDelivery").textContent=delivery.label;
   document.querySelector("#checkoutTotal").textContent=money(subtotal+delivery.fee);
 }
 
 function openCheckout(kind,id){
-  const source=kind==="deal"?state.hotDeals:state.products;
+  const source=kind==="deal"?state.hotDeals:kind==="class"?state.classes:state.products;
   const item=source.find(x=>String(x.id)===String(id));
   if(!item||!isInStock(item))return;
   checkoutItem=item;
+  checkoutKind=kind;
   closeModal();
+  const isClass=kind==="class";
   const img=productImages(item)[0]||"";
   const checkoutImage=document.querySelector("#checkoutImage");
   if(img){checkoutImage.src=img;checkoutImage.alt=item.name||"";checkoutImage.hidden=false}
@@ -292,10 +381,22 @@ function openCheckout(kind,id){
   document.querySelector("#checkoutItemPrice").textContent=money(item.price);
   const qty=document.querySelector("#checkoutQuantity");
   qty.value=1; qty.max=String(stockCount(item));
+  document.querySelector("#checkoutQuantityLabel").textContent=isClass?"Seats":"Quantity";
+  document.querySelector("#checkoutCountryField").hidden=isClass;
+  document.querySelector("#checkoutStateField").hidden=isClass;
+  document.querySelector("#checkoutRegionField").hidden=isClass;
+  document.querySelector("#checkoutAddressField").hidden=isClass;
+  document.querySelector("#checkoutCountry").required=!isClass;
+  document.querySelector("#checkoutState").required=!isClass&&document.querySelector("#checkoutCountry").value==="Nigeria";
+  document.querySelector("#checkoutRegion").required=!isClass&&document.querySelector("#checkoutCountry").value!=="Nigeria";
+  document.querySelector("#checkoutAddress").required=!isClass;
+  if(!isClass)syncCheckoutLocationFields();
+  document.querySelector("#checkoutDelivery").parentElement.hidden=isClass;
+  document.querySelector(".checkout-kicker").textContent=isClass?"CLASS BOOKING":"YOUR ORDER";
   document.querySelector("#checkoutNotice").textContent=PAYMENTS_CONNECTED
-    ?"Your order total will be verified securely before Paystack opens."
-    :"Secure Paystack payment is being connected. Until it is switched on, Buy Now will continue the completed order through WhatsApp.";
-  document.querySelector("#checkoutSubmit").textContent=PAYMENTS_CONNECTED?"Continue to secure payment":"Continue order";
+    ?(isClass?"Your class fee will be verified securely before Paystack opens.":"Your order total and delivery fee will be verified securely before Paystack opens.")
+    :(isClass?"Secure Paystack payment is being connected. Until it is switched on, Book Class will continue the completed booking through WhatsApp.":"Secure Paystack payment is being connected. Until it is switched on, Buy Now will continue the completed order through WhatsApp.");
+  document.querySelector("#checkoutSubmit").textContent=PAYMENTS_CONNECTED?"Continue to secure payment":(isClass?"Continue booking":"Continue order");
   document.querySelector("#checkoutModal").hidden=false;
   document.body.classList.add("modal-open");
   updateCheckoutSummary();
@@ -305,6 +406,7 @@ function closeCheckout(){
   document.querySelector("#checkoutModal").hidden=true;
   document.body.classList.remove("modal-open");
   checkoutItem=null;
+  checkoutKind="product";
 }
 
 function reviewCard(r){
@@ -367,6 +469,7 @@ function render(){
   renderAnnouncement();
   renderShop();
   renderDeals();
+  renderClasses();
   renderReview();
   restartReviews();
 }
@@ -441,8 +544,9 @@ document.querySelector("#modalBuy").onclick=()=>{
 document.querySelector("#checkoutClose").onclick=closeCheckout;
 document.querySelector("#checkoutBackdrop").onclick=closeCheckout;
 document.querySelector("#checkoutQuantity").addEventListener("input",updateCheckoutSummary);
-document.querySelector("#checkoutCountry").addEventListener("change",updateCheckoutSummary);
-document.querySelector("#checkoutState").addEventListener("input",updateCheckoutSummary);
+document.querySelector("#checkoutCountry").addEventListener("change",()=>{syncCheckoutLocationFields();updateCheckoutSummary()});
+document.querySelector("#checkoutState").addEventListener("change",updateCheckoutSummary);
+document.querySelector("#checkoutRegion").addEventListener("input",updateCheckoutSummary);
 document.querySelector("#checkoutForm").onsubmit=e=>{
   e.preventDefault();
   if(!checkoutItem)return;
@@ -450,16 +554,28 @@ document.querySelector("#checkoutForm").onsubmit=e=>{
   if(!form.reportValidity())return;
   const data=new FormData(form);
   const qty=Math.max(1,Math.min(stockCount(checkoutItem),Number(data.get("quantity"))||1));
-  const delivery=deliveryFor(String(data.get("country")||""),String(data.get("state")||""));
+  const subtotal=Number(checkoutItem.price||0)*qty;
+  const stateName=checkoutKind==="class"?"":checkoutStateName();
+  const delivery=checkoutKind==="class"?{fee:0,label:"Not required"}:deliveryFor(String(data.get("country")||""),stateName,subtotal);
   if(PAYMENTS_CONNECTED){ alert("Secure payment connection is not enabled yet."); return; }
-  const lines=[
-    "Hi HairsByGiftee ❤️","I'd like to place this order:","",
-    checkoutItem.name+" × "+qty,
-    "Item total: ₦"+(Number(checkoutItem.price||0)*qty).toLocaleString("en-NG"),
-    delivery.fee?"Delivery: ₦"+delivery.fee.toLocaleString("en-NG"):"Delivery: to be confirmed","",
-    "Name: "+data.get("name"),"Email: "+data.get("email"),"Phone: "+data.get("phone"),
-    "Country: "+data.get("country"),"State/Region: "+data.get("state"),"Address: "+data.get("address")
-  ];
+  const lines=checkoutKind==="class"
+    ?[
+      "Hi HairsByGiftee ❤️","I'd like to book this class:","",
+      checkoutItem.name+" × "+qty+" seat"+(qty===1?"":"s"),
+      "Class fee: ₦"+subtotal.toLocaleString("en-NG"),
+      checkoutItem.schedule?"Schedule: "+checkoutItem.schedule:"",
+      checkoutItem.format?"Format: "+checkoutItem.format:"",
+      checkoutItem.location?"Location: "+checkoutItem.location:"","",
+      "Name: "+data.get("name"),"Email: "+data.get("email"),"Phone: "+data.get("phone")
+    ].filter(Boolean)
+    :[
+      "Hi HairsByGiftee ❤️","I'd like to place this order:","",
+      checkoutItem.name+" × "+qty,
+      "Item total: ₦"+subtotal.toLocaleString("en-NG"),
+      delivery.fee?"Delivery: ₦"+delivery.fee.toLocaleString("en-NG"):"Delivery: "+delivery.label,"",
+      "Name: "+data.get("name"),"Email: "+data.get("email"),"Phone: "+data.get("phone"),
+      "Country: "+data.get("country"),"State/Region: "+stateName,"Address: "+data.get("address")
+    ];
   if(String(data.get("note")||"").trim())lines.push("Note: "+String(data.get("note")).trim());
   window.open("https://wa.me/"+WA+"?text="+encodeURIComponent(lines.join("\n")),"_blank","noopener,noreferrer");
   closeCheckout();
@@ -470,6 +586,7 @@ render();
 loadFxRates();
 watch("products");
 watch("hotDeals");
+watch("classes");
 watch("reviews");
 watch("announcements");
 watch("settings");

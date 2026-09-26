@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css?v=owner-20260926-1">
+  <link rel="stylesheet" href="../styles.css?v=owner-20260926-2">
 </head>
 <body class="admin-body">
   <section id="loginView" class="login-view">
@@ -43,6 +43,7 @@
       <button data-tab="home" class="active">Home</button>
       <button data-tab="products">Products</button>
       <button data-tab="deals">Hot Deals</button>
+      <button data-tab="classes">Classes</button>
       <button data-tab="announcements">Announcement</button>
       <button data-tab="orders">Orders</button>
       <button data-tab="delivery">Delivery</button>
@@ -171,8 +172,8 @@ const API_KEY="AIzaSyDpRFnf0iE_C-ft0-H1Fm79OXUmsIv1HUk";
 const FIRESTORE_BASE="https://firestore.googleapis.com/v1/projects/"+PROJECT+"/databases/(default)/documents";
 const STORAGE_BASE="https://firebasestorage.googleapis.com/v0/b/"+BUCKET+"/o";
 
-const state={products:[],hotDeals:[],reviews:[],announcements:[],orders:[],settings:[]};
-let tab="home",editingId=null,editingDealId=null,editingAnnouncementId=null;
+const state={products:[],hotDeals:[],classes:[],reviews:[],announcements:[],orders:[],settings:[]};
+let tab="home",editingId=null,editingDealId=null,editingClassId=null,editingAnnouncementId=null;
 
 const token=()=>sessionStorage.getItem("hbg_id_token")||"";
 const esc=(s="")=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
@@ -336,9 +337,10 @@ async function uploadMany(files,folder){
   return out;
 }
 async function load(){
-  const [products,hotDeals,reviews,announcements,orders,settings]=await Promise.all([
+  const [products,hotDeals,classes,reviews,announcements,orders,settings]=await Promise.all([
     listCollection("products"),
     listCollection("hotDeals"),
+    listCollection("classes"),
     listCollection("reviews"),
     listCollection("announcements"),
     listCollection("orders",true),
@@ -346,6 +348,7 @@ async function load(){
   ]);
   state.products=products;
   state.hotDeals=hotDeals;
+  state.classes=classes;
   state.reviews=reviews;
   state.announcements=announcements;
   state.orders=orders;
@@ -361,8 +364,8 @@ function setBusy(form,busy,label="Saving…"){
 function home(){
   const activeAnnouncement=state.announcements.find(x=>x.active!==false);
   return `<h1 class="admin-title">Welcome back</h1><p class="muted">Everything here updates the live website.</p>
-  <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="announcements">✦<b>Announcement</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
-  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.hotDeals.filter(x=>x.available!==false).length} live hot deals • ${state.orders.length} orders • ${state.reviews.filter(x=>x.published!==false).length} reviews</p><p class="muted">Announcement: ${esc(activeAnnouncement?.message||"None live")}</p></div>
+  <div class="quick"><button data-go="products">＋<b>Add Product</b></button><button data-go="deals">🔥<b>Hot Deal</b></button><button data-go="classes">✂<b>Add Class</b></button><button data-go="announcements">✦<b>Announcement</b></button><button data-go="reviews">★<b>Add Review</b></button></div>
+  <div class="panel"><b>At a glance</b><p>${state.products.length} products • ${state.hotDeals.filter(x=>x.available!==false).length} live hot deals • ${state.classes.filter(x=>x.available!==false).length} live classes • ${state.orders.length} orders • ${state.reviews.filter(x=>x.published!==false).length} reviews</p><p class="muted">Announcement: ${esc(activeAnnouncement?.message||"None live")}</p></div>
   ${state.products.length===0?'<div class="panel"><b>No products yet</b><p class="muted">Use Add Product to publish your first real wig and photos.</p></div>':""}`;
 }
 
@@ -397,6 +400,25 @@ function deals(){
   <div class="panel admin-list">${state.hotDeals.map(d=>`<div class="row product-row"><div class="row-product">${d.image?`<img src="${esc(d.image)}" alt="">`:""}<div><b>${esc(d.name)}</b><br><small>${naira(d.price)} • Stock ${d.stock??1} • ${esc(d.detail||"")}</small></div></div><span>${d.available===false?"Hidden":"Live"}</span><div class="row-actions"><button class="mini" data-edit-deal="${d.id}">Edit</button><button class="mini" data-toggle-deal="${d.id}">${d.available===false?"Show":"Hide"}</button><button class="mini danger" data-delete-deal="${d.id}">Delete</button></div></div>`).join("")||"<p>No hot deals yet.</p>"}</div>`;
 }
 
+function classes(){
+  const edit=state.classes.find(x=>x.id===editingClassId);
+  return `<h1 class="admin-title">Classes</h1><p class="muted">Publish hairstyling classes, control available seats, and prepare them for online booking.</p>
+  <form id="classForm" class="panel form-grid">
+    <label class="field">Class title<input name="name" required value="${esc(edit?.name||"")}" placeholder="e.g. Wig Installation Masterclass"></label>
+    <label class="field">Class fee (₦)<input name="price" type="number" min="1" required value="${edit?.price||""}"></label>
+    <label class="field">Available seats<input name="stock" type="number" min="0" step="1" required value="${edit?.stock??1}"></label>
+    <label class="field">Format<select name="format">${["In-person","Online","Hybrid"].map(v=>`<option ${edit?.format===v?"selected":""}>${v}</option>`).join("")}</select></label>
+    <label class="field">Duration<input name="duration" value="${esc(edit?.duration||"")}" placeholder="e.g. 2 days"></label>
+    <label class="field">Schedule<input name="schedule" value="${esc(edit?.schedule||"")}" placeholder="e.g. 12–13 October, 10am"></label>
+    <label class="field full">Location / access details<input name="location" value="${esc(edit?.location||"")}" placeholder="e.g. Lekki, Lagos or Live Zoom class"></label>
+    <label class="field full">Class description<textarea name="detail" maxlength="900" required placeholder="What students will learn, who the class is for, and what is included.">${esc(edit?.detail||"")}</textarea></label>
+    <label class="field full">Class photos<input name="imageFile" type="file" accept="image/*" multiple ${edit?"":"required"}><small>The first photo is the class cover. Large photos are automatically optimized. ${edit?.image||edit?.images?.length?"Leave blank to keep current photos.":""}</small></label>
+    <label class="check"><input name="available" type="checkbox" ${edit?.available===false?"":"checked"}> Show this class on the website</label>
+    <div class="field full admin-submit"><button class="btn primary" type="submit">${edit?"Save Class":"Publish Class"}</button>${edit?'<button class="mini" id="cancelClassEdit" type="button">Cancel</button>':""}</div>
+  </form>
+  <div class="panel admin-list">${state.classes.map(c=>`<div class="row product-row"><div class="row-product">${c.image?`<img src="${esc(c.image)}" alt="">`:""}<div><b>${esc(c.name)}</b><br><small>${naira(c.price)} • ${c.stock??1} seats • ${esc(c.format||"")} • ${esc(c.schedule||"")}</small></div></div><span>${c.available===false?"Hidden":"Live"}</span><div class="row-actions"><button class="mini" data-edit-class="${c.id}">Edit</button><button class="mini" data-toggle-class="${c.id}">${c.available===false?"Show":"Hide"}</button><button class="mini danger" data-delete-class="${c.id}">Delete</button></div></div>`).join("")||"<p>No classes yet.</p>"}</div>`;
+}
+
 function announcements(){
   const edit=state.announcements.find(x=>x.id===editingAnnouncementId);
   return `<h1 class="admin-title">Announcement</h1><p class="muted">Show one short message in the announcement bar above the website header.</p>
@@ -416,13 +438,22 @@ function orders(){
 
 function delivery(){
   const cfg=state.settings.find(x=>x.id==="checkout")||{};
-  return `<h1 class="admin-title">Delivery</h1><p class="muted">These fees are ready for the checkout flow and can be changed without editing code.</p>
-  <div class="panel notice"><b>Online payments are not enabled yet.</b><br>Paystack will be connected after the business account and secure backend are ready.</div>
+  const rate=(field,legacy=0)=>Number(cfg[field]??legacy??0);
+  return `<h1 class="admin-title">Delivery</h1><p class="muted">Set shipping by Nigerian zone. Checkout automatically matches the customer's selected state to the correct rate.</p>
+  <div class="panel notice"><b>Before online payments go live:</b><br>Set every Nigerian zone you deliver to. International delivery stays as a manual quote until you have reliable courier pricing.</div>
   <form id="deliveryForm" class="panel form-grid">
-    <label class="field">Lagos delivery fee (₦)<input name="lagosFee" type="number" min="0" value="${Number(cfg.lagosFee||0)}"></label>
-    <label class="field">Other Nigeria delivery fee (₦)<input name="nigeriaFee" type="number" min="0" value="${Number(cfg.nigeriaFee||0)}"></label>
-    <label class="field full">International delivery note<input name="internationalNote" maxlength="120" value="${esc(cfg.internationalNote||"International delivery is confirmed separately.")}"></label>
-    <div class="field full admin-submit"><button class="btn primary" type="submit">Save Delivery Settings</button></div>
+    <label class="field">Lagos (₦)<input name="shippingLagos" type="number" min="0" value="${rate("shippingLagos",cfg.lagosFee)}"></label>
+    <label class="field">South West (₦)<input name="shippingSouthWest" type="number" min="0" value="${rate("shippingSouthWest",cfg.nigeriaFee)}"></label>
+    <label class="field">South East (₦)<input name="shippingSouthEast" type="number" min="0" value="${rate("shippingSouthEast",cfg.nigeriaFee)}"></label>
+    <label class="field">South South (₦)<input name="shippingSouthSouth" type="number" min="0" value="${rate("shippingSouthSouth",cfg.nigeriaFee)}"></label>
+    <label class="field">North Central (₦)<input name="shippingNorthCentral" type="number" min="0" value="${rate("shippingNorthCentral",cfg.nigeriaFee)}"></label>
+    <label class="field">North East (₦)<input name="shippingNorthEast" type="number" min="0" value="${rate("shippingNorthEast",cfg.nigeriaFee)}"></label>
+    <label class="field">North West (₦)<input name="shippingNorthWest" type="number" min="0" value="${rate("shippingNorthWest",cfg.nigeriaFee)}"></label>
+    <label class="field">Free delivery threshold (₦)<input name="freeShippingThreshold" type="number" min="0" value="${Number(cfg.freeShippingThreshold||0)}"><small>Used only when Free delivery is enabled.</small></label>
+    <label class="check field full"><input name="freeShippingEnabled" type="checkbox" ${cfg.freeShippingEnabled===true?"checked":""}> Enable free delivery above the threshold</label>
+    <label class="field full">International delivery message<input name="internationalNote" maxlength="120" value="${esc(cfg.internationalNote||"International delivery is quoted separately before payment.")}"></label>
+    <div class="field full shipping-map"><b>Zone map</b><small><strong>South West:</strong> Ekiti, Ogun, Ondo, Osun, Oyo · <strong>South East:</strong> Abia, Anambra, Ebonyi, Enugu, Imo · <strong>South South:</strong> Akwa Ibom, Bayelsa, Cross River, Delta, Edo, Rivers · <strong>North Central:</strong> Benue, FCT Abuja, Kogi, Kwara, Nasarawa, Niger, Plateau · <strong>North East:</strong> Adamawa, Bauchi, Borno, Gombe, Taraba, Yobe · <strong>North West:</strong> Jigawa, Kaduna, Kano, Katsina, Kebbi, Sokoto, Zamfara.</small></div>
+    <div class="field full admin-submit"><button class="btn primary" type="submit">Save Shipping Settings</button></div>
   </form>`;
 }
 
@@ -432,12 +463,12 @@ function reviews(){
   <div class="panel admin-list">${state.reviews.map(r=>`<div class="row"><div><b>${esc(r.name)} • ${"★".repeat(r.rating||5)}</b><br><small>“${esc(r.quote)}”</small></div><button class="mini" data-toggle-review="${r.id}">${r.published===false?"Show":"Hide"}</button><button class="mini danger" data-delete-review="${r.id}">Delete</button></div>`).join("")||"<p>No reviews yet.</p>"}</div>`;
 }
 function render(){
-  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():tab==="announcements"?announcements():tab==="orders"?orders():tab==="delivery"?delivery():reviews();
+  screen().innerHTML=tab==="home"?home():tab==="products"?products():tab==="deals"?deals():tab==="classes"?classes():tab==="announcements"?announcements():tab==="orders"?orders():tab==="delivery"?delivery():reviews();
   screen().querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>switchTab(b.dataset.go));
   wireActions();
 }
 function switchTab(next){
-  tab=next;editingId=null;editingDealId=null;editingAnnouncementId=null;
+  tab=next;editingId=null;editingDealId=null;editingClassId=null;editingAnnouncementId=null;
   document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab===tab));
   render();
 }
@@ -480,6 +511,25 @@ function wireActions(){
   document.querySelectorAll("[data-toggle-deal]").forEach(b=>b.onclick=async()=>{const d=state.hotDeals.find(x=>x.id===b.dataset.toggleDeal);await updateDoc("hotDeals",d.id,{available:d.available===false,updatedAt:new Date()});await load()});
   document.querySelectorAll("[data-delete-deal]").forEach(b=>b.onclick=async()=>{if(confirm("Delete this Hot Deal from the website?")){await deleteDoc("hotDeals",b.dataset.deleteDeal);await load()}});
 
+  const cancelClass=document.querySelector("#cancelClassEdit");
+  if(cancelClass)cancelClass.onclick=()=>{editingClassId=null;render()};
+
+  const cf=document.querySelector("#classForm");
+  if(cf)cf.onsubmit=async e=>{e.preventDefault();setBusy(cf,true);try{
+    const f=new FormData(cf),old=state.classes.find(x=>x.id===editingClassId),files=[...cf.elements.imageFile.files];
+    const existingImages=Array.isArray(old?.images)?old.images.filter(Boolean):(old?.image?[old.image]:[]);
+    const uploadedImages=files.length?await uploadMany(files,"classes"):[];
+    const images=uploadedImages.length?[...existingImages,...uploadedImages]:existingImages;
+    if(!images.length)throw new Error("Add at least one class photo.");
+    const stock=Math.max(0,Math.floor(Number(f.get("stock"))||0));
+    const data={name:f.get("name").trim(),price:Number(f.get("price")),stock,format:f.get("format"),duration:f.get("duration").trim(),schedule:f.get("schedule").trim(),location:f.get("location").trim(),detail:f.get("detail").trim(),image:images[0],images,available:f.get("available")==="on"&&stock>0,updatedAt:new Date()};
+    if(editingClassId)await updateDoc("classes",editingClassId,data);else await createDoc("classes",{...data,createdAt:new Date()});
+    editingClassId=null;await load();alert("Class updated on the live website.");
+  }catch(e){alert("Could not save class: "+e.message)}finally{setBusy(cf,false)}};
+  document.querySelectorAll("[data-edit-class]").forEach(b=>b.onclick=()=>{editingClassId=b.dataset.editClass;render();window.scrollTo({top:0,behavior:"smooth"})});
+  document.querySelectorAll("[data-toggle-class]").forEach(b=>b.onclick=async()=>{const c=state.classes.find(x=>x.id===b.dataset.toggleClass);await updateDoc("classes",c.id,{available:c.available===false,updatedAt:new Date()});await load()});
+  document.querySelectorAll("[data-delete-class]").forEach(b=>b.onclick=async()=>{if(confirm("Delete this class from the website?")){await deleteDoc("classes",b.dataset.deleteClass);await load()}});
+
   const cancelAnnouncement=document.querySelector("#cancelAnnouncementEdit");
   if(cancelAnnouncement)cancelAnnouncement.onclick=()=>{editingAnnouncementId=null;render()};
 
@@ -519,13 +569,20 @@ function wireActions(){
   if(deliveryForm)deliveryForm.onsubmit=async e=>{e.preventDefault();setBusy(deliveryForm,true);try{
     const f=new FormData(deliveryForm);
     await updateDoc("settings","checkout",{
-      lagosFee:Math.max(0,Number(f.get("lagosFee"))||0),
-      nigeriaFee:Math.max(0,Number(f.get("nigeriaFee"))||0),
+      shippingLagos:Math.max(0,Number(f.get("shippingLagos"))||0),
+      shippingSouthWest:Math.max(0,Number(f.get("shippingSouthWest"))||0),
+      shippingSouthEast:Math.max(0,Number(f.get("shippingSouthEast"))||0),
+      shippingSouthSouth:Math.max(0,Number(f.get("shippingSouthSouth"))||0),
+      shippingNorthCentral:Math.max(0,Number(f.get("shippingNorthCentral"))||0),
+      shippingNorthEast:Math.max(0,Number(f.get("shippingNorthEast"))||0),
+      shippingNorthWest:Math.max(0,Number(f.get("shippingNorthWest"))||0),
+      freeShippingEnabled:f.get("freeShippingEnabled")==="on",
+      freeShippingThreshold:Math.max(0,Number(f.get("freeShippingThreshold"))||0),
       internationalNote:String(f.get("internationalNote")||"").trim(),
       onlineOrdersEnabled:false,
       updatedAt:new Date()
     });
-    await load(); alert("Delivery settings saved.");
+    await load(); alert("Shipping settings saved.");
   }catch(e){alert("Could not save delivery settings: "+e.message)}finally{setBusy(deliveryForm,false)}};
 
   const rf=document.querySelector("#reviewForm");
