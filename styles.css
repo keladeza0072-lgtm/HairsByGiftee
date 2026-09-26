@@ -76,3 +76,5 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .shipping-map{background:#fbf6f3;border:1px solid var(--line);padding:14px;border-radius:10px}
 .shipping-map small{line-height:1.7}
 .side button[data-tab="classes"]{white-space:nowrap}
+
+@media(min-width:901px){.admin-body .quick{grid-template-columns:repeat(5,1fr)}}

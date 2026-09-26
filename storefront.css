@@ -1110,3 +1110,5 @@
 .class-book{width:100%;min-height:43px;border:0;border-radius:22px;background:var(--brown);color:#fff;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
 @media(max-width:900px){.class-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.classes-section{padding:44px 0}.classes-head h2{font-size:36px}.class-grid{grid-template-columns:1fr}.class-image{height:330px}}
+
+.classes-empty{grid-column:1/-1;text-align:center;padding:28px;border:1px dashed #dccbc3;border-radius:14px;background:#fff;color:var(--muted);font-size:12px}

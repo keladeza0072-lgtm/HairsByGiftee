@@ -280,9 +280,11 @@ function renderClasses(){
   const section=document.querySelector("#classes");
   const grid=document.querySelector("#classGrid");
   if(!section||!grid)return;
-  if(loading.classes||loadError.classes){section.hidden=true;grid.innerHTML="";return;}
+  section.hidden=false;
+  if(loading.classes){grid.innerHTML='<div class="classes-empty">Loading class dates…</div>';return;}
+  if(loadError.classes){grid.innerHTML='<div class="classes-empty">Class details will be available here soon.</div>';return;}
   const classes=state.classes.filter(isInStock);
-  section.hidden=!classes.length;
+  if(!classes.length){grid.innerHTML='<div class="classes-empty">New class dates will be announced here soon.</div>';return;}
   grid.innerHTML=classes.map(classCard).join("");
   document.querySelectorAll("[data-book-class]").forEach(btn=>btn.onclick=()=>openCheckout("class",btn.dataset.bookClass));
 }
