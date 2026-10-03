@@ -6,7 +6,7 @@ const WA="2347087861972";
 const state={products:[],hotDeals:[],classes:[],reviews:[],announcements:[],settings:[]};
 const loading={products:true,hotDeals:true,classes:true,reviews:true,announcements:true,settings:true};
 const loadError={products:false,hotDeals:false,classes:false,reviews:false,announcements:false,settings:false};
-const PAYMENTS_CONNECTED=false;
+const PAYMENTS_CONNECTED=true;
 let activeCategory="All";
 let searchTerm="";
 let reviewIndex=0;
@@ -396,7 +396,7 @@ function openCheckout(kind,id){
   document.querySelector("#checkoutDelivery").parentElement.hidden=isClass;
   document.querySelector(".checkout-kicker").textContent=isClass?"CLASS BOOKING":"YOUR ORDER";
   document.querySelector("#checkoutNotice").textContent=PAYMENTS_CONNECTED
-    ?(isClass?"Your class fee will be verified securely before Paystack opens.":"Your order total and delivery fee will be verified securely before Paystack opens.")
+    ?(isClass?"Your class fee will be verified securely before Paystack opens. Payment is charged in NGN.":"Your order total and delivery fee will be verified securely before Paystack opens. Payment is charged in NGN.")
     :(isClass?"Secure Paystack payment is being connected. Until it is switched on, Book Class will continue the completed booking through WhatsApp.":"Secure Paystack payment is being connected. Until it is switched on, Buy Now will continue the completed order through WhatsApp.");
   document.querySelector("#checkoutSubmit").textContent=PAYMENTS_CONNECTED?"Continue to secure payment":(isClass?"Continue booking":"Continue order");
   document.querySelector("#checkoutModal").hidden=false;
@@ -549,7 +549,7 @@ document.querySelector("#checkoutQuantity").addEventListener("input",updateCheck
 document.querySelector("#checkoutCountry").addEventListener("change",()=>{syncCheckoutLocationFields();updateCheckoutSummary()});
 document.querySelector("#checkoutState").addEventListener("change",updateCheckoutSummary);
 document.querySelector("#checkoutRegion").addEventListener("input",updateCheckoutSummary);
-document.querySelector("#checkoutForm").onsubmit=e=>{
+document.querySelector("#checkoutForm").onsubmit=async e=>{
   e.preventDefault();
   if(!checkoutItem)return;
   const form=e.currentTarget;
@@ -559,7 +559,39 @@ document.querySelector("#checkoutForm").onsubmit=e=>{
   const subtotal=Number(checkoutItem.price||0)*qty;
   const stateName=checkoutKind==="class"?"":checkoutStateName();
   const delivery=checkoutKind==="class"?{fee:0,label:"Not required"}:deliveryFor(String(data.get("country")||""),stateName,subtotal);
-  if(PAYMENTS_CONNECTED){ alert("Secure payment connection is not enabled yet."); return; }
+  if(PAYMENTS_CONNECTED){
+    const submit=document.querySelector("#checkoutSubmit");
+    const oldText=submit.textContent;
+    submit.disabled=true;
+    submit.textContent="Opening secure payment…";
+    try{
+      const res=await fetch("/api/paystack/initialize",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          kind:checkoutKind,
+          itemId:checkoutItem.id,
+          quantity:qty,
+          name:String(data.get("name")||"").trim(),
+          email:String(data.get("email")||"").trim(),
+          phone:String(data.get("phone")||"").trim(),
+          country:String(data.get("country")||"").trim(),
+          state:stateName,
+          address:String(data.get("address")||"").trim(),
+          note:String(data.get("note")||"").trim()
+        })
+      });
+      const result=await res.json().catch(()=>({}));
+      if(!res.ok||!result.authorizationUrl)throw new Error(result.error||"Unable to start payment.");
+      window.location.assign(result.authorizationUrl);
+      return;
+    }catch(err){
+      alert(err.message||"Unable to start payment. Please try again.");
+      submit.disabled=false;
+      submit.textContent=oldText;
+      return;
+    }
+  }
   const lines=checkoutKind==="class"
     ?[
       "Hi HairsByGiftee ❤️","I'd like to book this class:","",
@@ -582,6 +614,25 @@ document.querySelector("#checkoutForm").onsubmit=e=>{
   window.open("https://wa.me/"+WA+"?text="+encodeURIComponent(lines.join("\n")),"_blank","noopener,noreferrer");
   closeCheckout();
 };
+async function handlePaystackReturn(){
+  const params=new URLSearchParams(window.location.search);
+  const reference=params.get("reference")||params.get("trxref");
+  if(!reference)return;
+  try{
+    const res=await fetch("/api/paystack/verify?reference="+encodeURIComponent(reference),{cache:"no-store"});
+    const result=await res.json().catch(()=>({}));
+    if(res.ok&&result.paid){
+      alert("Payment successful. Your HairsByGiftee order reference is "+result.reference+".");
+    }else{
+      alert(result.error||"We could not verify this payment yet. Please contact HairsByGiftee with your payment reference.");
+    }
+  }catch{
+    alert("We could not verify this payment yet. Please contact HairsByGiftee with your payment reference.");
+  }finally{
+    window.history.replaceState({},document.title,window.location.pathname+window.location.hash);
+  }
+}
+
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeCheckout();closeMenu()}});
 
 render();
@@ -592,3 +643,4 @@ watch("classes");
 watch("reviews");
 watch("announcements");
 watch("settings");
+handlePaystackReturn();
