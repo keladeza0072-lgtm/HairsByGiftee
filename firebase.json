@@ -41,6 +41,36 @@
           }
         ]
       }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/paystack/initialize",
+        "function": {
+          "functionId": "initializePaystackPayment",
+          "region": "europe-west1"
+        }
+      },
+      {
+        "source": "/api/paystack/verify",
+        "function": {
+          "functionId": "verifyPaystackPayment",
+          "region": "europe-west1"
+        }
+      },
+      {
+        "source": "/api/paystack/webhook",
+        "function": {
+          "functionId": "paystackWebhook",
+          "region": "europe-west1"
+        }
+      },
+      {
+        "source": "/api/checkout-status",
+        "function": {
+          "functionId": "checkoutStatus",
+          "region": "europe-west1"
+        }
+      }
     ]
   },
   "firestore": {
