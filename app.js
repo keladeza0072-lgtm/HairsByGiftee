@@ -48,10 +48,10 @@ const productImages=p=>{
   if(p.image&&!imgs.includes(p.image))imgs.unshift(p.image);
   return imgs;
 };
-const productImageMarkup=p=>{
+const productImageMarkup=(p,eager=false)=>{
   const src=productImages(p)[0];
   return src
-    ? `<img src="${esc(src)}" alt="${esc(p.name||"Wig")}" loading="lazy" decoding="async">`
+    ? `<img src="${esc(src)}" alt="${esc(p.name||"Wig")}" loading="${eager?"eager":"lazy"}" decoding="async"${eager?' fetchpriority="high"':""}>`
     : '<div class="product-image-placeholder" aria-hidden="true"></div>';
 };
 const whatsapp=(p,price)=>"https://wa.me/"+WA+"?text="+encodeURIComponent(
@@ -181,13 +181,13 @@ function visibleProducts(){
   });
 }
 
-function productCard(p){
+function productCard(p,index=0){
   const badges=[
     p.bestseller?'<span class="badge badge-best">Bestseller</span>':""
   ].join("");
   return `<article class="product" data-product-id="${esc(p.id)}">
     <div class="product-image">
-      ${productImageMarkup(p)}
+      ${productImageMarkup(p,index<4)}
       ${badges}
     </div>
     <div class="product-copy">
@@ -220,7 +220,7 @@ function renderShop(){
     return;
   }
   const products=visibleProducts();
-  document.querySelector("#shopGrid").innerHTML=products.length?products.map(productCard).join(""):'<div class="empty">No wigs found.</div>';
+  document.querySelector("#shopGrid").innerHTML=products.length?products.map((p,index)=>productCard(p,index)).join(""):'<div class="empty">No wigs found.</div>';
   renderFilters();
   wireProducts();
 }
