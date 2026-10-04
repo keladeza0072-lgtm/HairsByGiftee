@@ -301,9 +301,9 @@ async function optimizeUploadImage(file){
   if(!file||!String(file.type||"").startsWith("image/"))return file;
   if(/image\/(gif|svg\+xml)/i.test(file.type))return file;
 
-  const MAX_DIMENSION=2000;
-  const KEEP_ORIGINAL_UNDER=1200*1024;
-  const QUALITY=0.92;
+  const MAX_DIMENSION=1400;
+  const KEEP_ORIGINAL_UNDER=450*1024;
+  const QUALITY=0.84;
   let objectUrl="";
 
   try{
