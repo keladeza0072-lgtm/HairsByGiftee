@@ -139,9 +139,14 @@ async function loadFxRates(){
   const currencySelect=document.querySelector("#currencySelect");
   if(currencySelect)currencySelect.value=selectedCurrency;
 
-  const cacheFresh=fxCacheSavedAt&&Date.now()-fxCacheSavedAt<FX_MAX_AGE;
+  if(selectedCurrency==="NGN"){
+    renderPriceSections();
+    return;
+  }
+
+  const cacheFresh=fxCacheSavedAt&&Date.now()-fxCacheSavedAt<FX_MAX_AGE&&Number(fxRates[selectedCurrency]||0)>0;
   if(cacheFresh){
-    render();
+    renderPriceSections();
     return;
   }
 
@@ -163,14 +168,14 @@ async function loadFxRates(){
       rates:fxRates
     }));
   }catch{
-    if(selectedCurrency!=="NGN"&&!Number(fxRates[selectedCurrency]||0)){
+    if(!Number(fxRates[selectedCurrency]||0)){
       selectedCurrency="NGN";
       localStorage.setItem(FX_CURRENCY_KEY,selectedCurrency);
       if(currencySelect)currencySelect.value="NGN";
     }
   }
 
-  render();
+  renderPriceSections();
 }
 
 function visibleProducts(){
@@ -476,16 +481,32 @@ function render(){
   restartReviews();
 }
 
+function renderPriceSections(){
+  if(!loading.products)renderShop();
+  if(!loading.hotDeals)renderDeals();
+  if(!loading.classes)renderClasses();
+}
+
+const collectionRenderers={
+  products:renderShop,
+  hotDeals:renderDeals,
+  classes:renderClasses,
+  reviews:()=>{renderReview();restartReviews()},
+  announcements:renderAnnouncement,
+  settings:()=>{if(checkoutItem)updateCheckoutSummary()}
+};
+
 function watch(name){
+  const paint=collectionRenderers[name]||(()=>{});
   onSnapshot(collection(db,name),snap=>{
     state[name]=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     loading[name]=false;
     loadError[name]=false;
-    render();
+    paint();
   },()=>{
     loading[name]=false;
     loadError[name]=true;
-    render();
+    paint();
   });
 }
 
@@ -496,7 +517,7 @@ if(currencySelect){
     const next=currencySelect.value;
     selectedCurrency=SUPPORTED_CURRENCIES.includes(next)?next:"NGN";
     localStorage.setItem(FX_CURRENCY_KEY,selectedCurrency);
-    render();
+    loadFxRates();
   });
 }
 
@@ -525,7 +546,16 @@ const searchBar=document.querySelector("#searchBar");
 const searchInput=document.querySelector("#searchInput");
 document.querySelector("#searchToggle").onclick=()=>{searchBar.hidden=false;setTimeout(()=>searchInput.focus(),0)};
 document.querySelector("#searchClose").onclick=()=>{searchBar.hidden=true;searchInput.value="";searchTerm="";activeCategory="All";renderShop()};
-searchInput.oninput=e=>{searchTerm=e.target.value.trim().toLowerCase();activeCategory="All";renderShop();};
+let searchTimer=null;
+searchInput.oninput=e=>{
+  const value=e.target.value.trim().toLowerCase();
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(()=>{
+    searchTerm=value;
+    activeCategory="All";
+    renderShop();
+  },120);
+};
 
 const dealsToggle=document.querySelector("#dealsToggle");
 if(dealsToggle)dealsToggle.onclick=()=>{
