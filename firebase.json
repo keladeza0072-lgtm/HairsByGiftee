@@ -24,11 +24,29 @@
         ]
       },
       {
-        "source": "**/*.@(js|css)",
+        "source": "/app.js",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "public,max-age=604800,stale-while-revalidate=86400"
+            "value": "no-cache, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/firebase-client.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.css",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=3600,stale-while-revalidate=86400"
           }
         ]
       },
